@@ -13,6 +13,7 @@ type AuthContextType = {
 	tokens: AuthTokens;
 	isLoading: boolean;
 	isAuthenticated: boolean;
+	profileInfo: object | null;
 	login: (username: string, password: string) => Promise<void>;
 	logout: () => Promise<void>;
 };
@@ -33,6 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		refreshToken: null,
 	});
 	const [isLoading, setIsLoading] = useState(true);
+	const [profileInfo, setProfileInfo] = useState(null);
 
 	useEffect(() => {
 		loadTokens();
@@ -77,6 +79,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 				accessToken,
 				refreshToken,
 			});
+			setProfileInfo(response?.data?.result?.user);
 		} catch (error) {
 			console.error('Login error:', error);
 			throw error;
@@ -97,6 +100,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		<AuthContext.Provider
 			value={{
 				tokens,
+				profileInfo,
 				isLoading,
 				isAuthenticated: !!tokens.accessToken,
 				login,
