@@ -42,15 +42,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 	const loadTokens = async () => {
 		try {
-			const [accessToken, refreshToken] = await Promise.all([
+			const [accessToken, refreshToken, profileInfo] = await Promise.all([
 				AsyncStorage.getItem('accessToken'),
 				AsyncStorage.getItem('refreshToken'),
+				AsyncStorage.getItem('profileInfo'),
 			]);
 
 			setTokens({
 				accessToken,
 				refreshToken,
 			});
+			if (profileInfo) setProfileInfo(JSON.parse(profileInfo));
 		} catch (error) {
 			console.error('Error loading tokens:', error);
 		} finally {
@@ -73,6 +75,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			await Promise.all([
 				AsyncStorage.setItem('accessToken', accessToken),
 				AsyncStorage.setItem('refreshToken', refreshToken),
+				AsyncStorage.setItem(
+					'profileInfo',
+					JSON.stringify(response?.data?.result?.user)
+				),
 			]);
 
 			setTokens({
