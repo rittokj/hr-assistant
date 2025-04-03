@@ -78,7 +78,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			const accessToken = response?.data?.result?.tokenModel?.token;
 			const refreshToken = response?.data?.result?.tokenModel?.refreshToken;
 			const employeeId = response?.data?.result?.user?.employeeId;
-			console.log('employeeId 1', employeeId);
 			await Promise.all([
 				AsyncStorage.setItem('accessToken', accessToken),
 				AsyncStorage.setItem('refreshToken', refreshToken),
@@ -98,12 +97,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	};
 
 	const getProfileInfo = async (userId: string) => {
-		console.log('userId', userId);
 		try {
 			const response = await axiosInstance.get(
 				`${BASE_URL}api/Employee/Detail?id=${parseInt(userId)}`
 			);
-			console.log(JSON.stringify(response?.data.result));
 			setProfileInfo(response?.data?.result);
 		} catch (error) {
 			console.error('Login error:', error);

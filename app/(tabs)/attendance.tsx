@@ -12,7 +12,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import CircleAngleDownIcon from '@/assets/svgs/CircleAngleDown';
 import BottomSheetSelecter from '@/components/BottomSheetSelecter';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import DailyAttendence from '@/components/DailyAttendence';
 import { useAttendance } from '../contexts/AttendanceContext';
 
@@ -26,6 +26,7 @@ export default function AttendanceScreen() {
 		attendanceList,
 		isLoading,
 		summary,
+		fetchAttendanceData,
 	} = useAttendance();
 
 	const listHeader = () => {
@@ -85,6 +86,10 @@ export default function AttendanceScreen() {
 			</View>
 		);
 	};
+
+	useEffect(() => {
+		fetchAttendanceData();
+	}, [selectedMonth]);
 
 	return (
 		<KeyboardAvoidingView
@@ -149,7 +154,8 @@ export default function AttendanceScreen() {
 				list={contextMonths}
 				title='Select Month'
 				onSelect={(item) => {
-					setSelectedMonth({ ...item, metaData: item });
+					if (item?.id !== selectedMonth?.id)
+						setSelectedMonth({ ...item, metaData: item });
 				}}
 				onClose={() => setOpen(false)}
 				selectedItem={selectedMonth}

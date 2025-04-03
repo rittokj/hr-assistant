@@ -16,6 +16,8 @@ type MonthData = {
 	id: string;
 	label: string;
 	value: string;
+	month: number | null;
+	year: number | null;
 };
 
 type AttendanceSummary = {
@@ -48,6 +50,7 @@ interface AttendanceContextType {
 	isLoading: boolean;
 	summary: AttendanceSummary;
 	markAttendance: (typeId: number) => Promise<any>;
+	fetchAttendanceData: () => Promise<any>;
 }
 
 const AttendanceContext = createContext<AttendanceContextType | undefined>(
@@ -59,11 +62,13 @@ export function AttendanceProvider({
 }: {
 	children: React.ReactNode;
 }) {
-	const { tokens, profileInfo } = useAuth();
+	const { tokens } = useAuth();
 	const [selectedMonth, setSelectedMonth] = useState<MonthData>({
 		id: '',
 		label: '',
 		value: '',
+		month: null,
+		year: null,
 	});
 	const [attendanceList, setAttendanceList] = useState<AttendanceData[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
@@ -84,6 +89,8 @@ export function AttendanceProvider({
 				1
 			);
 			const monthName = date.toLocaleString('default', { month: 'long' });
+			const year = date.toLocaleString('default', { year: 'numeric' });
+			const month = date.toLocaleString('default', { month: 'numeric' });
 			const monthYear = date.toLocaleString('default', {
 				month: 'long',
 				year: 'numeric',
@@ -93,6 +100,8 @@ export function AttendanceProvider({
 				id: (i + 1).toString(),
 				label: monthYear,
 				value: monthName,
+				month: parseInt(month),
+				year: parseInt(year),
 			});
 		}
 
@@ -103,51 +112,53 @@ export function AttendanceProvider({
 
 	useEffect(() => {
 		if (!selectedMonth.id && months.length > 0) {
-			setSelectedMonth(months[0]);
+			setSelectedMonth({ ...months[0], metaData: months[0] });
 		}
 	}, [months]);
 
-	useEffect(() => {
-		const fetchAttendanceData = async () => {
-			if (!selectedMonth.id || !profileInfo?.userId) return;
+	const fetchAttendanceData = async () => {
+		if (!selectedMonth.id || !tokens?.employeeId) return;
+		setAttendanceList([]);
 
-			setIsLoading(true);
-			try {
-				const { data } = await axiosInstance.post(
-					'api/Attendance/GetEmployeeAttDetailByMonth',
-					{
-						offset: 0,
-						limit: 10,
-						search: '',
-						employeeId: 0,
-						departmentId: 0,
-						year: 2025,
-						month: 4,
-					}
-				);
+		setIsLoading(true);
+		try {
+			const response = await axiosInstance.post(
+				'api/Attendance/GetEmployeeAttDetailByMonth',
+				{
+					offset: 0,
+					limit: 10,
+					search: '',
+					employeeId: tokens?.employeeId,
+					departmentId: 0,
+					year: selectedMonth.year,
+					month: selectedMonth.month,
+				}
+			);
+			const { result } = response.data;
+			setAttendanceList(result[0].attendanceMonthDetail || []);
+			setSummary({
+				totalAttendance: result[0].totalAttendance || 0,
+				totalLeaves: result[0].totalLeaves || 0,
+				totalWorkingHours: result[0].totalWorkingHours || 0,
+			});
+		} catch (error) {
+			console.error('Error fetching attendance data:', error);
+			// Reset data on error
+			setAttendanceList([]);
+			setSummary({
+				totalAttendance: 0,
+				totalLeaves: 0,
+				totalWorkingHours: 0,
+			});
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
-				setAttendanceList(data.attendanceList || []);
-				setSummary({
-					totalAttendance: data.totalAttendance || 0,
-					totalLeaves: data.totalLeaves || 0,
-					totalWorkingHours: data.totalWorkingHours || 0,
-				});
-			} catch (error) {
-				console.error('Error fetching attendance data:', error);
-				// Reset data on error
-				setAttendanceList([]);
-				setSummary({
-					totalAttendance: 0,
-					totalLeaves: 0,
-					totalWorkingHours: 0,
-				});
-			} finally {
-				setIsLoading(false);
-			}
-		};
+	// useEffect(() => {
 
-		fetchAttendanceData();
-	}, [selectedMonth, , profileInfo]);
+	// 	fetchAttendanceData();
+	// }, [selectedMonth, tokens?.employeeId]);
 
 	const markAttendance = async (typeId: number) => {
 		setIsLoading(true);
@@ -157,7 +168,7 @@ export function AttendanceProvider({
 
 			const payload: AttendancePayload = {
 				AttendanceId: 0,
-				EmployeeId: profileInfo?.userId, // This should come from user context or props
+				EmployeeId: tokens?.employeeId, // This should come from user context or props
 				AttendanceDate: currentDate,
 				TotalHour: null,
 				IsManual: true,
@@ -189,6 +200,7 @@ export function AttendanceProvider({
 				months,
 				selectedMonth,
 				setSelectedMonth,
+				fetchAttendanceData,
 				attendanceList,
 				isLoading,
 				summary,
