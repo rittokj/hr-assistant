@@ -8,6 +8,22 @@ import moment from 'moment';
 
 function DailyAttendence({ attendance }: any) {
 	const colorScheme = useColorScheme();
+	const dateBgColor =
+		attendance?.attStatus === 'A'
+			? '#ffa100'
+			: attendance?.attStatus === 'H'
+			? '#ff0100'
+			: colorScheme === 'dark'
+			? '#000'
+			: '#f3eeff';
+	const dateTextColor =
+		attendance?.attStatus === 'A'
+			? '#ffffff'
+			: attendance?.attStatus === 'H'
+			? '#ffffff'
+			: colorScheme === 'dark'
+			? '#ffffff'
+			: '#000000';
 	return (
 		<View
 			style={[
@@ -33,10 +49,12 @@ function DailyAttendence({ attendance }: any) {
 						style={[
 							styles.circleWrapper,
 							{
-								backgroundColor: colorScheme === 'dark' ? '#000' : '#F3EEFF',
+								backgroundColor: dateBgColor,
 							},
 						]}>
-						<ThemedText>{moment(attendance.attDate).format('DD')}</ThemedText>
+						<ThemedText style={{ color: dateTextColor }}>
+							{moment(attendance.attDate).format('DD')}
+						</ThemedText>
 					</View>
 					<View>
 						<ThemedText style={styles.text}>
