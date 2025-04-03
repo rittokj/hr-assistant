@@ -17,8 +17,8 @@ import { useAuth } from './contexts/AuthContext';
 const LoginScreen = () => {
 	const navigation = useNavigation();
 	const { login, isLoading, isAuthenticated } = useAuth();
-	const [username, setUsername] = useState('employee1');
-	const [password, setPassword] = useState('rw123');
+	const [username, setUsername] = useState('sv1');
+	const [password, setPassword] = useState('123');
 	const [error, setError] = useState<string | null>(null);
 	useEffect(() => {
 		if (isAuthenticated) {
@@ -77,7 +77,7 @@ const LoginScreen = () => {
 				</Text>
 			</TouchableOpacity>
 
-			<TouchableOpacity onPress={() => console.log('Forgot Password Pressed')}>
+			<TouchableOpacity>
 				<Text style={styles.forgotPassword}>Forgot Password?</Text>
 			</TouchableOpacity>
 		</ThemedView>

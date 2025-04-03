@@ -69,9 +69,7 @@ export default function LeaveFormScreen() {
 	const [openDatePicker, setOpenDatePicker] = useState(false);
 
 	const getDocument = () => {
-		DocumentPicker.getDocumentAsync((res) => {
-			console.log('res: ', res);
-		});
+		DocumentPicker.getDocumentAsync((res) => {});
 	};
 
 	const renderTypes = (item: FormItem) => {
@@ -85,7 +83,6 @@ export default function LeaveFormScreen() {
 					</View>
 				);
 			case 'dropdown':
-				console.log(item.value);
 				return (
 					<TouchableOpacity
 						onPress={() => setOpen(true)}
@@ -128,12 +125,10 @@ export default function LeaveFormScreen() {
 						{Platform.OS === 'ios' || openDatePicker === item.id ? (
 							<RNDateTimePicker
 								onChange={(e, date: Date) => {
-									console.log('openDatePicker: ', openDatePicker);
 									const updatedFormData = JSON.parse(JSON.stringify(formData));
 									const index = updatedFormData.findIndex(
 										(i) => i.id === openDatePicker
 									);
-									console.log('index: ', index);
 
 									if (index > -1) {
 										updatedFormData[index] = {

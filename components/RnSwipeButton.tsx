@@ -15,7 +15,7 @@ function RnSwipeButton() {
 	useEffect(() => {
 		setTimeout(() => {
 			setCurrentTime(new Date());
-		}, 60000);
+		}, 1000);
 	}, [currentTime]);
 
 	const handleSwipeSuccess = async () => {

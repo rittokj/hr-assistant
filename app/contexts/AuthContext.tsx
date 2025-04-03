@@ -7,6 +7,7 @@ const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 type AuthTokens = {
 	accessToken: string | null;
 	refreshToken: string | null;
+	employeeId: string | null;
 };
 
 type AuthContextType = {
@@ -32,6 +33,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const [tokens, setTokens] = useState<AuthTokens>({
 		accessToken: null,
 		refreshToken: null,
+		employeeId: null,
 	});
 	const [isLoading, setIsLoading] = useState(true);
 	const [profileInfo, setProfileInfo] = useState(null);
@@ -42,17 +44,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 	const loadTokens = async () => {
 		try {
-			const [accessToken, refreshToken, profileInfo] = await Promise.all([
+			// AsyncStorage.removeItem('accessToken');
+			// AsyncStorage.removeItem('refreshToken');
+			// AsyncStorage.removeItem('employeeId');
+			const [accessToken, refreshToken, employeeId] = await Promise.all([
 				AsyncStorage.getItem('accessToken'),
 				AsyncStorage.getItem('refreshToken'),
-				AsyncStorage.getItem('profileInfo'),
+				AsyncStorage.getItem('employeeId'),
 			]);
-
 			setTokens({
 				accessToken,
 				refreshToken,
+				employeeId,
 			});
-			if (profileInfo) setProfileInfo(JSON.parse(profileInfo));
+			if (employeeId) getProfileInfo(employeeId);
 		} catch (error) {
 			console.error('Error loading tokens:', error);
 		} finally {
@@ -72,20 +77,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			);
 			const accessToken = response?.data?.result?.tokenModel?.token;
 			const refreshToken = response?.data?.result?.tokenModel?.refreshToken;
+			const employeeId = response?.data?.result?.user?.employeeId;
+			console.log('employeeId 1', employeeId);
 			await Promise.all([
 				AsyncStorage.setItem('accessToken', accessToken),
 				AsyncStorage.setItem('refreshToken', refreshToken),
-				AsyncStorage.setItem(
-					'profileInfo',
-					JSON.stringify(response?.data?.result?.user)
-				),
+				AsyncStorage.setItem('employeeId', `${employeeId}`),
 			]);
+			if (employeeId) getProfileInfo(employeeId);
 
 			setTokens({
 				accessToken,
 				refreshToken,
+				employeeId,
 			});
-			setProfileInfo(response?.data?.result?.user);
+		} catch (error) {
+			console.error('Login error:', error);
+			throw error;
+		}
+	};
+
+	const getProfileInfo = async (userId: string) => {
+		console.log('userId', userId);
+		try {
+			const response = await axiosInstance.get(
+				`${BASE_URL}api/Employee/Detail?id=${parseInt(userId)}`
+			);
+			console.log(JSON.stringify(response?.data.result));
+			setProfileInfo(response?.data?.result);
 		} catch (error) {
 			console.error('Login error:', error);
 			throw error;

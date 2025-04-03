@@ -20,6 +20,7 @@ import ArrowRightIcon from '@/assets/svgs/ArrowRight';
 import RnSwipeButton from '@/components/RnSwipeButton';
 import RequestsCarousel from '@/components/RequestsCarousel';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { useAuth } from '../contexts/AuthContext';
 
 const { width } = Dimensions.get('window');
 const data = [
@@ -36,6 +37,7 @@ export default function HomeScreen() {
 	const colorScheme = useColorScheme();
 	const textColor = useThemeColor({}, 'text');
 	const backgroundColor = useThemeColor({}, 'background');
+	const { profileInfo } = useAuth();
 	return (
 		<SafeAreaView style={[styles.container, { backgroundColor }]}>
 			<ThemedView style={styles.header}>
@@ -45,8 +47,12 @@ export default function HomeScreen() {
 						style={styles.reactLogo}
 					/>
 					<View>
-						<ThemedText type='subtitle'>Ibrahim Sulaiman</ThemedText>
-						<ThemedText>Carpenter</ThemedText>
+						<ThemedText type='subtitle'>
+							{profileInfo?.employeeName || ''}
+						</ThemedText>
+						<ThemedText>
+							{profileInfo?.designationDTO?.designationName || ''}
+						</ThemedText>
 					</View>
 				</View>
 				<Link href='/notifications'>

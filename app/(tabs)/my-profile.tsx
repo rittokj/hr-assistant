@@ -13,11 +13,11 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import AngleRightIcon from '@/assets/svgs/AngleRight';
 import { useAuth } from '../contexts/AuthContext';
+import moment from 'moment';
 
 export default function ProfileScreen() {
 	const colorScheme = useColorScheme();
 	const { profileInfo } = useAuth();
-	console.log('profileInfo', profileInfo);
 	return (
 		<SafeAreaView style={styles.container}>
 			<ThemedView style={styles.requestsContainer}>
@@ -37,7 +37,7 @@ export default function ProfileScreen() {
 					<View style={styles.imageWrapper}>
 						<Image
 							source={require('@/assets/images/sample-profile.jpeg')}
-							style={styles.peofileImage}
+							style={styles.profileImage}
 						/>
 						<View style={styles.nameWrapper}>
 							<ThemedText
@@ -47,27 +47,52 @@ export default function ProfileScreen() {
 									fontWeight: '600',
 									marginBottom: 5,
 								}}>
-								{profileInfo?.fullName || ''}
+								{profileInfo?.employeeName || ''}
 							</ThemedText>
 							<ThemedText style={{ color: '#fff', fontSize: 14 }}>
-								Carpenter
+								{profileInfo?.designationDTO?.designationName || ''}
 							</ThemedText>
 						</View>
 					</View>
 					<View style={styles.detailsWrapper}>
 						{[
-							{ id: 'gender', label: 'Gender', value: 'Male' },
+							{
+								id: 'gender',
+								label: 'Gender',
+								value: profileInfo?.genderCdNavigationDTO?.lookUpName || '',
+							},
 							{ id: 'dob', label: 'Date of Birth', value: '20 Jan 1990' },
-							{ id: 'email', label: 'Email ID', value: 'ibrahim@123.com' },
-							{ id: 'phone', label: 'Mobile Number', value: '0567 847 383' },
-							{ id: 'joining', label: 'Joining Date', value: '12 Feb 2025' },
-							{ id: 'designation', label: 'Designation', value: 'Carpenter' },
+							{
+								id: 'email',
+								label: 'Email ID',
+								value: profileInfo?.emailId || '',
+							},
+							{
+								id: 'phone',
+								label: 'Mobile Number',
+								value: profileInfo?.mobileNo || '',
+							},
+							{
+								id: 'joining',
+								label: 'Joining Date',
+								value: profileInfo?.appointmentSignedDate || '',
+								type: 'date',
+							},
+							{
+								id: 'designation',
+								label: 'Designation',
+								value: profileInfo?.designationDTO?.designationName || '',
+							},
 						].map((item) => (
 							<View
 								key={item.id}
 								style={styles.detailsItem}>
 								<ThemedText>{item.label}</ThemedText>
-								<ThemedText>{item.value}</ThemedText>
+								<ThemedText>
+									{item?.type === 'date'
+										? moment(item.value).format('DD MMM YYYY')
+										: item.value}
+								</ThemedText>
 							</View>
 						))}
 					</View>
@@ -121,7 +146,7 @@ const styles = StyleSheet.create({
 		paddingVertical: 10,
 		paddingTop: Platform.OS === 'android' ? 72 : 10,
 	},
-	peofileImage: {
+	profileImage: {
 		width: '100%',
 		height: 350,
 		objectFit: 'cover',

@@ -59,7 +59,7 @@ export function AttendanceProvider({
 }: {
 	children: React.ReactNode;
 }) {
-	const { token, profileInfo } = useAuth();
+	const { tokens, profileInfo } = useAuth();
 	const [selectedMonth, setSelectedMonth] = useState<MonthData>({
 		id: '',
 		label: '',
@@ -175,7 +175,6 @@ export function AttendanceProvider({
 				'/api/Attendance/SaveEmployeeAttByDate',
 				payload
 			);
-			console.log(JSON.stringify(response));
 			return response.data;
 		} catch (error) {
 			throw error;
