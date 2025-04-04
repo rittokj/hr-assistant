@@ -1,11 +1,18 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+	View,
+	Text,
+	StyleSheet,
+	TouchableOpacity,
+	ActivityIndicator,
+} from 'react-native';
 import BottomSheet, {
 	BottomSheetBackdrop,
 	BottomSheetScrollView,
 } from '@gorhom/bottom-sheet';
 
 import CloseIcon from '@/assets/svgs/Close';
+import { ThemedView } from './ThemedView';
 
 interface BottomSheetSelecterProps {
 	open: boolean;
@@ -16,6 +23,7 @@ interface BottomSheetSelecterProps {
 	selectedItem: any;
 	valueName: string;
 	valueId: string;
+	loading: boolean;
 }
 
 function BottomSheetSelecter({
@@ -27,6 +35,7 @@ function BottomSheetSelecter({
 	selectedItem,
 	valueName,
 	valueId,
+	loading = false,
 }: BottomSheetSelecterProps) {
 	const sheetRef = useRef<BottomSheet>(null);
 
@@ -85,6 +94,7 @@ function BottomSheetSelecter({
 				{list.map((item) => (
 					<TouchableOpacity
 						key={item[valueId]}
+						disabled={loading}
 						onPress={() => {
 							onSelect(item);
 							closeModal();
@@ -123,6 +133,21 @@ function BottomSheetSelecter({
 						</View>
 					</TouchableOpacity>
 				))}
+				{loading ? (
+					<View
+						style={{
+							position: 'absolute',
+							left: 0,
+							right: 0,
+							top: 0,
+							bottom: 0,
+							justifyContent: 'center',
+							alignItems: 'center',
+							backgroundColor: 'rgba(0,0,0,0.1)',
+						}}>
+						<ActivityIndicator size='large' />
+					</View>
+				) : null}
 			</BottomSheetScrollView>
 		</BottomSheet>
 	);

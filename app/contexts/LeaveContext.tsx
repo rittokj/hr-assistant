@@ -16,6 +16,10 @@ type LeaveContextType = {
 	leaveTypesList: Leave[];
 	selectedLeaveDetails: Leave;
 	setSelectedLeave: (leave: Leave) => Promise<void>;
+	checkLeaveAvailability: (
+		employeeId: string,
+		leaveTypeId: string
+	) => Promise<void>;
 };
 
 export const LeaveContext = createContext<LeaveContextType | null>(null);
@@ -52,6 +56,19 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 		}
 	};
 
+	const checkLeaveAvailability = async (
+		employeeId: string,
+		leaveTypeId: string
+	) => {
+		try {
+			return await axiosInstance.get(
+				`${BASE_URL}api/LeaveRequest/CheckEmployeeLeaveAvailability?employeeId=${employeeId}&leaveTypeId=${leaveTypeId}`
+			);
+		} catch (error) {
+			throw error;
+		}
+	};
+
 	const setSelectedLeave = async (leave: Leave) => {
 		try {
 			setSelectedLeaveDetails({ ...leave });
@@ -67,6 +84,7 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 				isLoading,
 				leaveTypesList,
 				selectedLeaveDetails,
+				checkLeaveAvailability,
 				setSelectedLeave,
 			}}>
 			{children}

@@ -11,6 +11,7 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import ToastManager from 'toastify-react-native';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
 
@@ -19,6 +20,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { AuthProvider } from './contexts/AuthContext';
 import { LeaveProvider } from './contexts/LeaveContext';
 import { AttendanceProvider } from './contexts/AttendanceContext';
+import { toastConfig } from './utils/toastConfig';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -194,6 +196,7 @@ export default function RootLayout() {
 									}}
 								/>
 							</Stack>
+							<ToastManager config={toastConfig} />
 							<StatusBar style='auto' />
 						</ThemeProvider>
 					</GestureHandlerRootView>

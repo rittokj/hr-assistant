@@ -11,6 +11,7 @@ import {
 	useColorScheme,
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
+import { Toast } from 'toastify-react-native';
 
 import SmallAngleIcon from '@/assets/svgs/SmallAngle';
 import BottomSheetSelecter from '@/components/BottomSheetSelecter';
@@ -19,6 +20,7 @@ import PlusIcon from '@/assets/svgs/Plus';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedTextInput } from '@/components/ThemedTextInput';
 import { useLeaves } from './contexts/LeaveContext';
+import { useAuth } from './contexts/AuthContext';
 
 interface FormItem {
 	id: string;
@@ -63,9 +65,11 @@ const formDataModel = [
 
 export default function LeaveFormScreen() {
 	const colorScheme = useColorScheme();
-	const { leaveTypesList } = useLeaves();
+	const { leaveTypesList, checkLeaveAvailability } = useLeaves();
+	const { profileInfo } = useAuth();
 	const [formData, setFormData] = useState(formDataModel);
 	const [open, setOpen] = useState(false);
+	const [checkingAvailability, setCheckingAvailability] = useState(false);
 	const [openDatePicker, setOpenDatePicker] = useState(false);
 
 	const getDocument = () => {
@@ -213,6 +217,31 @@ export default function LeaveFormScreen() {
 				);
 		}
 	};
+
+	const toggleLeave = (leave) => {
+		setCheckingAvailability(true);
+		checkLeaveAvailability(profileInfo.employeeID, leave.leaveTypeId)
+			.then((res) => {
+				if (res.data.result.allocatedCount !== 0) {
+					Toast.show({
+						type: 'error',
+						text1: `You have used all your ${leave.leaveTypeName || ''} days.`,
+						position: 'bottom',
+						visibilityTime: 8000,
+					});
+				} else {
+					const updatedFormData = formData.map((data) => {
+						if (data.id === 'leaveType') {
+							return { ...data, value: leave.leaveTypeName, metaData: leave };
+						}
+						return data;
+					});
+					setFormData(updatedFormData);
+				}
+			})
+			.finally(() => setCheckingAvailability(false));
+	};
+
 	return (
 		<KeyboardAvoidingView
 			behavior='padding'
@@ -265,20 +294,13 @@ export default function LeaveFormScreen() {
 			<BottomSheetSelecter
 				list={leaveTypesList}
 				title='Select Leave Type'
-				onSelect={(item) => {
-					const updatedFormData = formData.map((data) => {
-						if (data.id === 'leaveType') {
-							return { ...data, value: item.leaveTypeName, metaData: item };
-						}
-						return data;
-					});
-					setFormData(updatedFormData);
-				}}
+				onSelect={toggleLeave}
 				onClose={() => setOpen(false)}
 				selectedItem={formData.find((item) => item.id === 'leaveType')}
 				valueName='leaveTypeName'
 				valueId='leaveTypeId'
 				open={open}
+				loading={checkingAvailability}
 			/>
 		</KeyboardAvoidingView>
 	);
