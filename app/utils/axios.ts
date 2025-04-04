@@ -1,16 +1,22 @@
-import axios from 'axios';
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
+import axios from 'axios';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
-const EXPO_PUBLIC_API_KEY = process.env.EXPO_PUBLIC_API_KEY;
+const BASE_URL = Constants.expoConfig?.extra.API_URL;
+const API_KEY = Constants.expoConfig?.extra.API_KEY;
 
 export const axiosInstance = axios.create({
 	baseURL: BASE_URL,
 	headers: {
-		'X-Api-Key': EXPO_PUBLIC_API_KEY,
+		'X-Api-Key': API_KEY,
 		'Content-Type': 'application/json',
 	},
 });
+
+if (Platform.OS === 'android') {
+	axiosInstance.defaults.proxy = false;
+}
 
 // Request interceptor
 axiosInstance.interceptors.request.use(

@@ -1,8 +1,10 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
+
 import { axiosInstance } from '../utils/axios';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+const BASE_URL = Constants.expoConfig?.extra.API_URL;
 
 type AuthTokens = {
 	accessToken: string | null;
@@ -91,7 +93,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 				employeeId,
 			});
 		} catch (error) {
-			console.error('Login error:', error);
 			throw error;
 		}
 	};

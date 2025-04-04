@@ -1,15 +1,14 @@
 import * as React from 'react';
+import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
 import { ScrollView, StyleSheet, useColorScheme, View } from 'react-native';
-import SkeletonLoading from 'expo-skeleton-loading';
 
 function DailyAttendenceLoaderItem() {
 	const darkTheme = useColorScheme() == 'dark';
 
 	return (
-		<SkeletonLoading
-			background={darkTheme ? '#373737' : '#adadad'}
-			highlight={darkTheme ? '#171717' : '#ffffff'}
-			style={styles.placeholderWrapper}>
+		<ShimmerPlaceHolder
+			visible
+			style={{ opacity: darkTheme ? 0.5 : 1 }}>
 			<View>
 				<View style={styles.placeholderContainer}>
 					<View style={styles.attendanceSectionText}>
@@ -36,7 +35,7 @@ function DailyAttendenceLoaderItem() {
 				</View>
 				<View style={styles.bottomLine} />
 			</View>
-		</SkeletonLoading>
+		</ShimmerPlaceHolder>
 	);
 }
 
@@ -66,11 +65,11 @@ const styles = StyleSheet.create({
 		padding: 20,
 	},
 	placeholderWrapper: {
-		justifyContent: 'center',
-		height: 'auto',
-		backgroundColor: '#F5F5F5',
-		marginHorizontal: 20,
-		paddingVertical: 20,
+		// justifyContent: 'center',
+		// height: 'auto',
+		// backgroundColor: '#F5F5F5',
+		// marginHorizontal: 20,
+		// paddingVertical: 20,
 	},
 	placeholderContainer: {
 		flexDirection: 'row',
@@ -82,14 +81,14 @@ const styles = StyleSheet.create({
 		marginTop: 5,
 		width: 25,
 		height: 10,
-		backgroundColor: '#fff',
+		backgroundColor: '#E6F2FF',
 		borderRadius: 4,
 	},
 	text: {
 		marginTop: 10,
 		width: 45,
 		height: 10,
-		backgroundColor: '#fff',
+		backgroundColor: '#E6F2FF',
 		borderRadius: 4,
 	},
 	bottomLine: {
@@ -114,7 +113,7 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 		alignItems: 'center',
 		marginRight: 10,
-		backgroundColor: '#fff',
+		backgroundColor: '#E6F2FF',
 	},
 	attendanceSectionText: {
 		flexDirection: 'row',

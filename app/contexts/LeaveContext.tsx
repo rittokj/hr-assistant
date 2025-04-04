@@ -1,8 +1,10 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import Constants from 'expo-constants';
+
 import { axiosInstance } from '../utils/axios';
 import { useAuth } from './AuthContext';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+const BASE_URL = Constants.expoConfig?.extra.API_URL;
 
 type Leave = {
 	id: number;

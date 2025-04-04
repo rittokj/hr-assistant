@@ -29,10 +29,9 @@ function DailyAttendence({ attendance }: any) {
 			style={[
 				styles.item,
 				{
-					borderColor: '#F3EBFF',
+					borderColor: '#474747',
 					backgroundColor: colorScheme === 'dark' ? '#171717' : '#fff',
 					borderBottomWidth: 1,
-					marginTop: 10,
 				},
 			]}>
 			<View
