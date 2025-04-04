@@ -8,12 +8,13 @@ import {
 	Platform,
 	useColorScheme,
 } from 'react-native';
+import moment from 'moment';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import AngleRightIcon from '@/assets/svgs/AngleRight';
 import { useAuth } from '../contexts/AuthContext';
-import moment from 'moment';
+import DefaultUserImageIcon from '@/assets/svgs/DefaultUserImage';
 
 export default function ProfileScreen() {
 	const colorScheme = useColorScheme();
@@ -35,10 +36,16 @@ export default function ProfileScreen() {
 						paddingBottom: 120,
 					}}>
 					<View style={styles.imageWrapper}>
-						<Image
-							source={require('@/assets/images/sample-profile.jpeg')}
-							style={styles.profileImage}
-						/>
+						{profileInfo?.profileImagePath ? (
+							<Image
+								source={profileInfo?.profileImagePath}
+								style={styles.profileImage}
+							/>
+						) : (
+							<View style={styles.profileImage}>
+								<DefaultUserImageIcon />
+							</View>
+						)}
 						<View style={styles.nameWrapper}>
 							<ThemedText
 								style={{
@@ -61,7 +68,11 @@ export default function ProfileScreen() {
 								label: 'Gender',
 								value: profileInfo?.genderCdNavigationDTO?.lookUpName || '',
 							},
-							{ id: 'dob', label: 'Date of Birth', value: '20 Jan 1990' },
+							{
+								id: 'dob',
+								label: 'Date of Birth',
+								value: profileInfo?.dob || '',
+							},
 							{
 								id: 'email',
 								label: 'Email ID',
@@ -150,6 +161,7 @@ const styles = StyleSheet.create({
 		width: '100%',
 		height: 350,
 		objectFit: 'cover',
+		backgroundColor: '#373737',
 	},
 	imageWrapper: {
 		position: 'relative',

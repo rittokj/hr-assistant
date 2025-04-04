@@ -21,6 +21,7 @@ import RnSwipeButton from '@/components/RnSwipeButton';
 import RequestsCarousel from '@/components/RequestsCarousel';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useAuth } from '../contexts/AuthContext';
+import DefaultUserImageIcon from '@/assets/svgs/DefaultUserImage';
 
 const { width } = Dimensions.get('window');
 const data = [
@@ -42,10 +43,17 @@ export default function HomeScreen() {
 		<SafeAreaView style={[styles.container, { backgroundColor }]}>
 			<ThemedView style={styles.header}>
 				<View style={styles.headerNameSection}>
-					<Image
-						source={require('@/assets/images/sample-profile.jpeg')}
-						style={styles.reactLogo}
-					/>
+					{profileInfo?.profileImagePath ? (
+						<Image
+							source={profileInfo?.profileImagePath}
+							style={styles.reactLogo}
+						/>
+					) : (
+						<View style={styles.reactLogo}>
+							<DefaultUserImageIcon />
+						</View>
+					)}
+
 					<View>
 						<ThemedText type='subtitle'>
 							{profileInfo?.employeeName || ''}
@@ -263,5 +271,6 @@ const styles = StyleSheet.create({
 		borderRadius: 30,
 		objectFit: 'cover',
 		resizeMode: 'contain',
+		backgroundColor: '#676767',
 	},
 });
