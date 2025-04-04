@@ -3,8 +3,6 @@ node_modules/
 build/
 dist/
 yarn-error.log
-yarn.lock
-package-lock.json
 
 # Expo specific
 .expo/
@@ -26,7 +24,6 @@ yarn-debug.log*
 .env.*
 
 # Babel
-babel.config.js
 
 # iOS specific
 **/xcuserdata/

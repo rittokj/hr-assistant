@@ -15,6 +15,7 @@ import BottomSheetSelecter from '@/components/BottomSheetSelecter';
 import { useEffect, useState } from 'react';
 import DailyAttendence from '@/components/DailyAttendence';
 import { useAttendance } from '../contexts/AttendanceContext';
+import DailyAttendenceLoader from '@/components/DailyAttendenceLoader';
 
 export default function AttendanceScreen() {
 	const [open, setOpen] = useState(false);
@@ -139,9 +140,7 @@ export default function AttendanceScreen() {
 					renderItem={({ item }) => <DailyAttendence attendance={item} />}
 					ListEmptyComponent={
 						isLoading ? (
-							<ThemedText style={{ textAlign: 'center', marginTop: 20 }}>
-								Loading...
-							</ThemedText>
+							<DailyAttendenceLoader />
 						) : (
 							<ThemedText style={{ textAlign: 'center', marginTop: 20 }}>
 								No attendance records found
