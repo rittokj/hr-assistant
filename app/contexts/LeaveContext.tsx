@@ -51,6 +51,7 @@ type LeaveContextType = {
 		leaveTypeId: string
 	) => Promise<void>;
 	getLeaveRequests: (params: PaginationParams) => Promise<void>;
+	applyLeave: (params: PaginationParams) => Promise<void>;
 };
 
 export const LeaveContext = createContext<LeaveContextType | null>(null);
@@ -104,15 +105,23 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 			setIsLoading(true);
 			const response = await axiosInstance.post(
 				`${BASE_URL}api/LeaveRequest/List/Pagination`,
-				params,
-				{
-					headers: {
-						'X-Api-Key': '12345ABCDE67890FGHIJ',
-						'Content-Type': 'application/json',
-					},
-				}
+				params
 			);
 			if (response.data.status == 200) setLeaveRequests(response.data.result);
+		} catch (error) {
+			throw error;
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	const applyLeave = async (params: PaginationParams) => {
+		try {
+			const response = await axiosInstance.post(
+				`${BASE_URL}api/LeaveRequest/Create`,
+				params
+			);
+			return response;
 		} catch (error) {
 			throw error;
 		} finally {
@@ -155,6 +164,7 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 				leaveRequests,
 				selectedLeaveRequest,
 				checkLeaveAvailability,
+				applyLeave,
 				setSelectedLeave,
 				setSelectedLeaveRequest: handleSetSelectedLeaveRequest,
 				getLeaveRequests,

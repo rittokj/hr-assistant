@@ -21,6 +21,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedTextInput } from '@/components/ThemedTextInput';
 import { useLeaves } from './contexts/LeaveContext';
 import { useAuth } from './contexts/AuthContext';
+import { useNavigation } from 'expo-router';
 
 interface FormItem {
 	id: string;
@@ -46,14 +47,16 @@ const formDataModel = [
 	{
 		id: 'fromDate',
 		label: 'From Date',
+		value: new Date(),
 		type: 'date',
 	},
 	{
 		id: 'toDate',
 		label: 'To Date',
+		value: new Date(),
 		type: 'date',
 	},
-	{ id: 'leaveDays', label: 'Leave Days', value: '5', type: 'dynamic' },
+	{ id: 'leaveDays', label: 'Leave Days', value: '', type: 'dynamic' },
 	{ id: 'reason', label: 'Reason', value: 'Medical', type: 'text' },
 	{
 		id: 'attachment',
@@ -64,8 +67,14 @@ const formDataModel = [
 ];
 
 export default function LeaveFormScreen() {
+	const navigation = useNavigation();
 	const colorScheme = useColorScheme();
-	const { leaveTypesList, checkLeaveAvailability } = useLeaves();
+	const {
+		leaveTypesList,
+		checkLeaveAvailability,
+		getLeaveRequests,
+		applyLeave,
+	} = useLeaves();
 	const { profileInfo } = useAuth();
 	const [formData, setFormData] = useState(formDataModel);
 	const [open, setOpen] = useState(false);
@@ -106,6 +115,7 @@ export default function LeaveFormScreen() {
 							thumbColor='#FFFFFF'
 							ios_backgroundColor='#DADADA'
 							onValueChange={() => {
+								const fromDate = formData.find((i) => i.id === 'fromDate');
 								const updatedFormData = formData.map((data) => {
 									if (data.id === 'halfDay') {
 										return {
@@ -113,6 +123,19 @@ export default function LeaveFormScreen() {
 											value: data.value === 'Yes' ? 'No' : 'Yes',
 										};
 									}
+									if (data.id === 'toDate') {
+										return {
+											...data,
+											value: fromDate?.value || new Date(),
+										};
+									}
+									if (data.id === 'leaveDays') {
+										return {
+											...data,
+											value: '0.5',
+										};
+									}
+
 									return data;
 								});
 								setFormData(updatedFormData);
@@ -139,6 +162,17 @@ export default function LeaveFormScreen() {
 											...updatedFormData[index],
 											value: date,
 										};
+										if (updatedFormData[index].id === 'fromDate') {
+											const toDateIndex = updatedFormData.findIndex(
+												(i) => i.id === 'toDate'
+											);
+											if (toDateIndex > -1) {
+												updatedFormData[toDateIndex] = {
+													...updatedFormData[toDateIndex],
+													value: date,
+												};
+											}
+										}
 									}
 									setFormData(updatedFormData);
 									if (date) setOpenDatePicker(false);
@@ -171,9 +205,13 @@ export default function LeaveFormScreen() {
 					</View>
 				);
 			case 'dynamic':
+				const halfDay = formData.find((i) => i.id === 'halfDay');
+
 				const startDate = moment(formData[3].value);
 				const endDate = moment(formData[4].value);
-				const daysCount = endDate.diff(startDate, 'days');
+				const daysCount =
+					endDate.diff(startDate, 'days') +
+					(halfDay?.value === 'Yes' ? 0.5 : 1);
 
 				return (
 					<View>
@@ -222,7 +260,7 @@ export default function LeaveFormScreen() {
 		setCheckingAvailability(true);
 		checkLeaveAvailability(profileInfo.employeeID, leave.leaveTypeId)
 			.then((res) => {
-				if (res.data.result.allocatedCount !== 0) {
+				if (res.data.result.allocatedCount === 0) {
 					Toast.show({
 						type: 'error',
 						text1: `You have used all your ${leave.leaveTypeName || ''} days.`,
@@ -242,6 +280,79 @@ export default function LeaveFormScreen() {
 			.finally(() => setCheckingAvailability(false));
 	};
 
+	const submitLeaveRequest = async () => {
+		const fromDate = formData.find((item) => item.id === 'fromDate').value;
+		const toDate = formData.find((item) => item.id === 'toDate').value;
+		const leaveType = formData.find((item) => item.id === 'leaveType').metaData;
+		const reason = formData.find((item) => item.id === 'reason').value;
+		const isHalfDay =
+			formData.find((item) => item.id === 'halfDay').value === 'Yes';
+		const leaveDays =
+			moment(toDate).diff(moment(fromDate), 'days') + (isHalfDay ? 0.5 : 1);
+
+		if (!fromDate || !toDate || !leaveType || !reason) {
+			Toast.show({
+				type: 'error',
+				text1: 'Please complete all fields before submitting.',
+				position: 'bottom',
+			});
+			return;
+		}
+
+		const payload = {
+			EmployeeLeaveRequestId: 0,
+			EmployeeId: profileInfo.employeeID,
+			LeaveTypeId: leaveType.leaveTypeId,
+			LeaveFromDate: moment(fromDate).format(),
+			LeaveToDate: moment(toDate).format(),
+			Reason: reason,
+			IsDeleted: false,
+			EmployeeName: profileInfo.employeeName,
+			TransDate: moment().format(),
+			TransNo: `TX${Date.now()}`,
+			LeaveDays: leaveDays,
+			IsHalfDay: isHalfDay,
+			WfstateConfigId: 3,
+			ActionNotes: 'Submitted',
+		};
+		try {
+			applyLeave(payload)
+				.then(async (res) => {
+					await getLeaveRequests({
+						offset: 0,
+						limit: 10,
+						search: '',
+						isExpired: 0,
+						filterList: [],
+					});
+					setFormData(formDataModel);
+					navigation.goBack();
+					console.log('res', res);
+					Toast.show({
+						type: 'success',
+						text1: 'Leave request submitted successfully.',
+						position: 'bottom',
+					});
+				})
+				.catch((err) => {
+					console.log('err', err);
+					Toast.show({
+						type: 'error',
+						text1: 'Submission failed',
+						text2: err.message || 'Something went wrong.',
+						position: 'bottom',
+					});
+				});
+		} catch (err) {
+			Toast.show({
+				type: 'error',
+				text1: 'Network Error',
+				text2: err.message,
+				position: 'bottom',
+			});
+		}
+	};
+
 	return (
 		<KeyboardAvoidingView
 			behavior='padding'
@@ -254,15 +365,7 @@ export default function LeaveFormScreen() {
 					{formData.map((item) => (
 						<View
 							key={item.id}
-							style={{
-								flexDirection: 'row',
-								marginHorizontal: 20,
-								marginTop: 20,
-								paddingBottom: 15,
-								justifyContent: 'space-between',
-								borderBottomColor: '#ECE9F2',
-								borderBottomWidth: 1,
-							}}>
+							style={styles.container}>
 							<View>
 								<ThemedText style={{ fontSize: 14, textAlign: 'left' }}>
 									{item.label}
@@ -274,17 +377,9 @@ export default function LeaveFormScreen() {
 
 					<View>
 						<TouchableOpacity
-							style={{
-								margin: 20,
-								marginTop: 30,
-								padding: 15,
-								backgroundColor: '#007AFF',
-								justifyContent: 'center',
-								alignItems: 'center',
-								borderRadius: 10,
-							}}>
-							<ThemedText
-								style={{ color: '#FFF', fontWeight: '600', fontSize: 16 }}>
+							onPress={submitLeaveRequest}
+							style={styles.applyeaveButton}>
+							<ThemedText style={styles.applyeaveButtonText}>
 								Apply leave
 							</ThemedText>
 						</TouchableOpacity>
@@ -307,5 +402,27 @@ export default function LeaveFormScreen() {
 }
 
 const styles = StyleSheet.create({
-	container: {},
+	container: {
+		flexDirection: 'row',
+		marginHorizontal: 20,
+		marginTop: 20,
+		paddingBottom: 15,
+		justifyContent: 'space-between',
+		borderBottomColor: '#ECE9F2',
+		borderBottomWidth: 1,
+	},
+	applyeaveButton: {
+		margin: 20,
+		marginTop: 30,
+		padding: 15,
+		backgroundColor: '#007AFF',
+		justifyContent: 'center',
+		alignItems: 'center',
+		borderRadius: 10,
+	},
+	applyeaveButtonText: {
+		color: '#FFF',
+		fontWeight: '600',
+		fontSize: 16,
+	},
 });
