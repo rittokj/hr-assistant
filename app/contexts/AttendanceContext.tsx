@@ -4,10 +4,16 @@ import moment from 'moment';
 import { useAuth } from './AuthContext';
 import { axiosInstance } from '../utils/axios';
 
+type Attendance = {
+	time: string;
+	division: string;
+	id: number;
+};
+
 type AttendanceData = {
 	date: string;
-	checkIn: string;
-	checkOut: string;
+	checkIn: Attendance;
+	checkOut: Attendance;
 	totalHours: string;
 	status: 'present' | 'absent' | 'leave';
 };
@@ -49,15 +55,14 @@ interface AttendanceContextType {
 	attendanceList: AttendanceData[];
 	isLoading: boolean;
 	summary: AttendanceSummary;
-	markAttendance: (typeId: number) => Promise<any>;
+	markAttendance: (typeId: number, id: number) => Promise<any>;
 	fetchAttendanceData: () => Promise<any>;
 	currentDayAttendance: {
-		checkIn: string | null;
-		checkOut: string | null;
+		checkIn: Attendance;
+		checkOut: Attendance;
 	};
 	weeklyAttendance: AttendanceData[];
 	fetchCurrentDayAttendance: () => Promise<void>;
-	fetchWeeklyAttendance: () => Promise<void>;
 	isCurrentDayLoading: boolean;
 	isWeeklyLoading: boolean;
 }
@@ -71,7 +76,7 @@ export function AttendanceProvider({
 }: {
 	children: React.ReactNode;
 }) {
-	const { tokens } = useAuth();
+	const { profileInfo } = useAuth();
 	const [selectedMonth, setSelectedMonth] = useState<MonthData>({
 		id: '',
 		label: '',
@@ -89,11 +94,11 @@ export function AttendanceProvider({
 		totalWorkingHours: 0,
 	});
 	const [currentDayAttendance, setCurrentDayAttendance] = useState<{
-		checkIn: string | null;
-		checkOut: string | null;
+		checkIn: Attendance;
+		checkOut: Attendance;
 	}>({
-		checkIn: null,
-		checkOut: null,
+		checkIn: { time: '', division: '', id: 0 },
+		checkOut: { time: '', division: '', id: 0 },
 	});
 	const [weeklyAttendance, setWeeklyAttendance] = useState<AttendanceData[]>(
 		[]
@@ -138,7 +143,7 @@ export function AttendanceProvider({
 	}, [months]);
 
 	const fetchAttendanceData = async () => {
-		if (!selectedMonth.id || !tokens?.employeeId) return;
+		if (!selectedMonth.id || !profileInfo?.employeeID) return;
 		setAttendanceList([]);
 
 		setIsLoading(true);
@@ -149,7 +154,7 @@ export function AttendanceProvider({
 					offset: 0,
 					limit: 10,
 					search: '',
-					employeeId: tokens?.employeeId,
+					employeeId: profileInfo?.employeeID,
 					departmentId: 0,
 					year: selectedMonth.year,
 					month: selectedMonth.month,
@@ -176,22 +181,21 @@ export function AttendanceProvider({
 		}
 	};
 
-	const markAttendance = async (typeId: number) => {
+	const markAttendance = async (typeId: number, id: number) => {
 		setIsLoading(true);
 		try {
 			const currentDate = moment().format('YYYY-MM-DD');
 			const currentTime = moment().format('HH:mm:ss');
-
 			const payload: AttendancePayload = {
-				AttendanceId: 0,
-				EmployeeId: tokens?.employeeId, // This should come from user context or props
+				AttendanceId: id || 0,
+				EmployeeId: profileInfo?.employeeID, // This should come from user context or props
 				AttendanceDate: currentDate,
 				TotalHour: null,
 				IsManual: true,
 				AttendanceDetDTOList: [
 					{
 						AttendanceDetId: 0,
-						AttendanceId: 0,
+						AttendanceId: id || 0,
 						TypeId: typeId,
 						AttendanceTime: currentTime,
 					},
@@ -202,6 +206,8 @@ export function AttendanceProvider({
 				'/api/Attendance/SaveEmployeeAttByDate',
 				payload
 			);
+
+			await fetchCurrentDayAttendance();
 			return response.data;
 		} catch (error) {
 			throw error;
@@ -211,60 +217,40 @@ export function AttendanceProvider({
 	};
 
 	const fetchCurrentDayAttendance = async () => {
-		if (!tokens?.employeeId) return;
+		if (!profileInfo?.employeeID) return;
 		setIsCurrentDayLoading(true);
 		try {
 			const currentDate = moment().format('MM/DD/YYYY');
+
 			const response = await axiosInstance.get(
-				'api/Attendance/GetEmployeeAttByDate',
-				{
-					params: {
-						employeeId: tokens.employeeId,
-						attDate: currentDate,
-					},
-				}
+				`api/Attendance/GetEmployeeAttByDate?employeeId=${profileInfo.employeeID}&attDate=${currentDate}`
 			);
-			const { result } = response.data;
-			if (result && result.length > 0) {
-				const attendance = result[0];
-				setCurrentDayAttendance({
-					checkIn: attendance.checkIn || null,
-					checkOut: attendance.checkOut || null,
-				});
-			}
+			const attList = response?.data?.result.attendanceDetDTOList;
+			const checkIn = attList?.find((i) => i.typeId === 1);
+			const checkOut = attList?.find((i) => i.typeId === 2);
+			setCurrentDayAttendance({
+				checkIn: {
+					time: checkIn?.attendanceTime
+						? moment(checkIn.attendanceTime, 'HH:mm:ss').format('hh.mm')
+						: '',
+					division: checkIn?.attendanceTime
+						? moment(checkIn.attendanceTime, 'HH:mm:ss').format('A')
+						: '--',
+					id: checkIn?.attendanceId,
+				},
+				checkOut: {
+					time: checkOut?.attendanceTime
+						? moment(checkOut.attendanceTime, 'HH:mm:ss').format('hh.mm')
+						: '',
+					division: checkOut?.attendanceTime
+						? moment(checkOut.attendanceTime, 'HH:mm:ss').format('A')
+						: '--',
+					id: checkOut?.attendanceId || 0,
+				},
+			});
 		} catch (error) {
-			console.error('Error fetching current day attendance:', error);
 		} finally {
 			setIsCurrentDayLoading(false);
-		}
-	};
-
-	const fetchWeeklyAttendance = async () => {
-		if (!tokens?.employeeId) return;
-		setIsWeeklyLoading(true);
-		try {
-			const startDate = moment().startOf('week').format('MM/DD/YYYY');
-			const endDate = moment().endOf('week').format('MM/DD/YYYY');
-			const response = await axiosInstance.post(
-				'api/Attendance/GetEmployeeAttDetailByMonth',
-				{
-					offset: 0,
-					limit: 7,
-					search: '',
-					employeeId: tokens.employeeId,
-					departmentId: 0,
-					startDate,
-					endDate,
-				}
-			);
-			const { result } = response.data;
-			if (result && result.length > 0) {
-				setWeeklyAttendance(result[0].attendanceMonthDetail || []);
-			}
-		} catch (error) {
-			console.error('Error fetching weekly attendance:', error);
-		} finally {
-			setIsWeeklyLoading(false);
 		}
 	};
 
@@ -282,7 +268,6 @@ export function AttendanceProvider({
 				currentDayAttendance,
 				weeklyAttendance,
 				fetchCurrentDayAttendance,
-				fetchWeeklyAttendance,
 				isCurrentDayLoading,
 				isWeeklyLoading,
 			}}>

@@ -104,7 +104,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			);
 			setProfileInfo(response?.data?.result);
 		} catch (error) {
-			console.error('Login error:', error);
 			throw error;
 		}
 	};

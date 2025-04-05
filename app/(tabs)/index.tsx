@@ -44,15 +44,13 @@ export default function HomeScreen() {
 		currentDayAttendance,
 		weeklyAttendance,
 		fetchCurrentDayAttendance,
-		fetchWeeklyAttendance,
 		isCurrentDayLoading,
 		isWeeklyLoading,
 	} = useAttendance();
 
 	useEffect(() => {
 		fetchCurrentDayAttendance();
-		fetchWeeklyAttendance();
-	}, []);
+	}, [profileInfo?.employeeID]);
 
 	const chartData = weeklyAttendance.map((att) => ({
 		value: att.totalHours ? parseFloat(att.totalHours) : 0,
@@ -150,17 +148,19 @@ export default function HomeScreen() {
 							) : (
 								<>
 									<ThemedText type='title'>
-										{currentDayAttendance.checkIn || '--:--'}
+										{currentDayAttendance.checkIn.time || '--:--'}
 									</ThemedText>
 									<ThemedText>
-										{currentDayAttendance.checkIn ? 'AM' : ''}
+										{currentDayAttendance.checkIn.division}
 									</ThemedText>
 								</>
 							)}
 						</View>
 						<View style={styles.attendanceSectionText}>
 							<ThemedText>
-								{currentDayAttendance.checkIn ? 'On time' : 'Not checked in'}
+								{currentDayAttendance.checkIn.time
+									? 'On time'
+									: 'Not checked in'}
 							</ThemedText>
 						</View>
 					</View>
@@ -184,17 +184,19 @@ export default function HomeScreen() {
 							) : (
 								<>
 									<ThemedText type='title'>
-										{currentDayAttendance.checkOut || '--:--'}
+										{currentDayAttendance.checkOut.time || '--:--'}
 									</ThemedText>
 									<ThemedText>
-										{currentDayAttendance.checkOut ? 'PM' : ''}
+										{currentDayAttendance.checkOut.division}
 									</ThemedText>
 								</>
 							)}
 						</View>
 						<View style={styles.attendanceSectionText}>
 							<ThemedText>
-								{currentDayAttendance.checkOut ? 'On time' : 'Not checked out'}
+								{currentDayAttendance.checkOut.time
+									? 'On time'
+									: 'Not checked out'}
 							</ThemedText>
 						</View>
 					</View>
