@@ -51,6 +51,15 @@ interface AttendanceContextType {
 	summary: AttendanceSummary;
 	markAttendance: (typeId: number) => Promise<any>;
 	fetchAttendanceData: () => Promise<any>;
+	currentDayAttendance: {
+		checkIn: string | null;
+		checkOut: string | null;
+	};
+	weeklyAttendance: AttendanceData[];
+	fetchCurrentDayAttendance: () => Promise<void>;
+	fetchWeeklyAttendance: () => Promise<void>;
+	isCurrentDayLoading: boolean;
+	isWeeklyLoading: boolean;
 }
 
 const AttendanceContext = createContext<AttendanceContextType | undefined>(
@@ -72,11 +81,23 @@ export function AttendanceProvider({
 	});
 	const [attendanceList, setAttendanceList] = useState<AttendanceData[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
+	const [isCurrentDayLoading, setIsCurrentDayLoading] = useState(false);
+	const [isWeeklyLoading, setIsWeeklyLoading] = useState(false);
 	const [summary, setSummary] = useState<AttendanceSummary>({
 		totalAttendance: 0,
 		totalLeaves: 0,
 		totalWorkingHours: 0,
 	});
+	const [currentDayAttendance, setCurrentDayAttendance] = useState<{
+		checkIn: string | null;
+		checkOut: string | null;
+	}>({
+		checkIn: null,
+		checkOut: null,
+	});
+	const [weeklyAttendance, setWeeklyAttendance] = useState<AttendanceData[]>(
+		[]
+	);
 
 	const getLastTwelveMonths = () => {
 		const months = [];
@@ -155,11 +176,6 @@ export function AttendanceProvider({
 		}
 	};
 
-	// useEffect(() => {
-
-	// 	fetchAttendanceData();
-	// }, [selectedMonth, tokens?.employeeId]);
-
 	const markAttendance = async (typeId: number) => {
 		setIsLoading(true);
 		try {
@@ -194,6 +210,64 @@ export function AttendanceProvider({
 		}
 	};
 
+	const fetchCurrentDayAttendance = async () => {
+		if (!tokens?.employeeId) return;
+		setIsCurrentDayLoading(true);
+		try {
+			const currentDate = moment().format('MM/DD/YYYY');
+			const response = await axiosInstance.get(
+				'api/Attendance/GetEmployeeAttByDate',
+				{
+					params: {
+						employeeId: tokens.employeeId,
+						attDate: currentDate,
+					},
+				}
+			);
+			const { result } = response.data;
+			if (result && result.length > 0) {
+				const attendance = result[0];
+				setCurrentDayAttendance({
+					checkIn: attendance.checkIn || null,
+					checkOut: attendance.checkOut || null,
+				});
+			}
+		} catch (error) {
+			console.error('Error fetching current day attendance:', error);
+		} finally {
+			setIsCurrentDayLoading(false);
+		}
+	};
+
+	const fetchWeeklyAttendance = async () => {
+		if (!tokens?.employeeId) return;
+		setIsWeeklyLoading(true);
+		try {
+			const startDate = moment().startOf('week').format('MM/DD/YYYY');
+			const endDate = moment().endOf('week').format('MM/DD/YYYY');
+			const response = await axiosInstance.post(
+				'api/Attendance/GetEmployeeAttDetailByMonth',
+				{
+					offset: 0,
+					limit: 7,
+					search: '',
+					employeeId: tokens.employeeId,
+					departmentId: 0,
+					startDate,
+					endDate,
+				}
+			);
+			const { result } = response.data;
+			if (result && result.length > 0) {
+				setWeeklyAttendance(result[0].attendanceMonthDetail || []);
+			}
+		} catch (error) {
+			console.error('Error fetching weekly attendance:', error);
+		} finally {
+			setIsWeeklyLoading(false);
+		}
+	};
+
 	return (
 		<AttendanceContext.Provider
 			value={{
@@ -205,6 +279,12 @@ export function AttendanceProvider({
 				isLoading,
 				summary,
 				markAttendance,
+				currentDayAttendance,
+				weeklyAttendance,
+				fetchCurrentDayAttendance,
+				fetchWeeklyAttendance,
+				isCurrentDayLoading,
+				isWeeklyLoading,
 			}}>
 			{children}
 		</AttendanceContext.Provider>

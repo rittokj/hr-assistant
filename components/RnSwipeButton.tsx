@@ -10,7 +10,7 @@ function RnSwipeButton() {
 	const colorScheme = useColorScheme();
 	const [isCheckedIn, setIsCheckedIn] = useState(false);
 	const [currentTime, setCurrentTime] = useState(new Date());
-	const { markAttendance, isLoading } = useAttendance();
+	const { markAttendance } = useAttendance();
 
 	useEffect(() => {
 		setTimeout(() => {

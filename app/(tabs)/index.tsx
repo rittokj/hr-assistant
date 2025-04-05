@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import {
 	Image,
 	StyleSheet,
@@ -11,7 +12,6 @@ import {
 
 import { Link } from 'expo-router';
 import { BarChart } from 'react-native-gifted-charts';
-
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import BellIcon from '@/assets/svgs/Bell';
@@ -21,31 +21,51 @@ import RnSwipeButton from '@/components/RnSwipeButton';
 import RequestsCarousel from '@/components/RequestsCarousel';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useAuth } from '../contexts/AuthContext';
+import { useAttendance } from '../contexts/AttendanceContext';
 import DefaultUserImageIcon from '@/assets/svgs/DefaultUserImage';
+import moment from 'moment';
+
+interface ProfileInfo {
+	profileImagePath?: string;
+	employeeName?: string;
+	designationDTO?: {
+		designationName?: string;
+	};
+}
 
 const { width } = Dimensions.get('window');
-const data = [
-	{ value: 1, label: 'SUN' },
-	{ value: 7, label: 'MON' },
-	{ value: 8, label: 'TUE' },
-	{ value: 6, label: 'WED' },
-	{ value: 9, label: 'THU' },
-	{ value: 12, label: 'FRI' },
-	{ value: 2, label: 'SAT' },
-];
 
 export default function HomeScreen() {
 	const colorScheme = useColorScheme();
 	const textColor = useThemeColor({}, 'text');
 	const backgroundColor = useThemeColor({}, 'background');
-	const { profileInfo } = useAuth();
+	const { profileInfo } = useAuth() as { profileInfo: ProfileInfo };
+	const {
+		currentDayAttendance,
+		weeklyAttendance,
+		fetchCurrentDayAttendance,
+		fetchWeeklyAttendance,
+		isCurrentDayLoading,
+		isWeeklyLoading,
+	} = useAttendance();
+
+	useEffect(() => {
+		fetchCurrentDayAttendance();
+		fetchWeeklyAttendance();
+	}, []);
+
+	const chartData = weeklyAttendance.map((att) => ({
+		value: att.totalHours ? parseFloat(att.totalHours) : 0,
+		label: moment(att.date).format('ddd'),
+	}));
+
 	return (
 		<SafeAreaView style={[styles.container, { backgroundColor }]}>
 			<ThemedView style={styles.header}>
 				<View style={styles.headerNameSection}>
 					{profileInfo?.profileImagePath ? (
 						<Image
-							source={profileInfo?.profileImagePath}
+							source={{ uri: profileInfo.profileImagePath }}
 							style={styles.reactLogo}
 						/>
 					) : (
@@ -80,27 +100,33 @@ export default function HomeScreen() {
 						</Link>
 					</View>
 					<View style={styles.bodyGraphSection}>
-						<BarChart
-							data={data}
-							frontColor='#3185FE'
-							xAxisLabelTextStyle={{
-								color: textColor,
-							}}
-							yAxisTextStyle={{
-								color: textColor,
-							}}
-							height={250}
-							barWidth={(width - 60) / 15}
-							isAnimated={true}
-							yAxisLabelTexts={['0h', '2h', '4h', '6h', '8h', '10h', '12h']}
-							noOfSections={6}
-							barBorderRadius={4}
-							yAxisThickness={0}
-							xAxisThickness={0}
-							showYAxisIndices={false}
-							showXAxisIndices={false}
-							dashWidth={0}
-						/>
+						{isWeeklyLoading ? (
+							<ThemedText style={{ textAlign: 'center', padding: 20 }}>
+								Loading weekly data...
+							</ThemedText>
+						) : (
+							<BarChart
+								data={chartData}
+								frontColor='#3185FE'
+								xAxisLabelTextStyle={{
+									color: textColor,
+								}}
+								yAxisTextStyle={{
+									color: textColor,
+								}}
+								height={250}
+								barWidth={(width - 60) / 15}
+								isAnimated={true}
+								yAxisLabelTexts={['0h', '2h', '4h', '6h', '8h', '10h', '12h']}
+								noOfSections={6}
+								barBorderRadius={4}
+								yAxisThickness={0}
+								xAxisThickness={0}
+								showYAxisIndices={false}
+								showXAxisIndices={false}
+								dashWidth={0}
+							/>
+						)}
 					</View>
 				</ThemedView>
 				<ThemedView style={styles.attendanceContainer}>
@@ -119,11 +145,23 @@ export default function HomeScreen() {
 							<ThemedText>Check in</ThemedText>
 						</View>
 						<View style={styles.attendanceSectionText}>
-							<ThemedText type='title'>09:03</ThemedText>
-							<ThemedText>AM</ThemedText>
+							{isCurrentDayLoading ? (
+								<ThemedText>Loading...</ThemedText>
+							) : (
+								<>
+									<ThemedText type='title'>
+										{currentDayAttendance.checkIn || '--:--'}
+									</ThemedText>
+									<ThemedText>
+										{currentDayAttendance.checkIn ? 'AM' : ''}
+									</ThemedText>
+								</>
+							)}
 						</View>
 						<View style={styles.attendanceSectionText}>
-							<ThemedText>On time</ThemedText>
+							<ThemedText>
+								{currentDayAttendance.checkIn ? 'On time' : 'Not checked in'}
+							</ThemedText>
 						</View>
 					</View>
 					<View style={styles.attendanceSection}>
@@ -141,11 +179,23 @@ export default function HomeScreen() {
 							<ThemedText>Check out</ThemedText>
 						</View>
 						<View style={styles.attendanceSectionText}>
-							<ThemedText type='title'>09:03</ThemedText>
-							<ThemedText>AM</ThemedText>
+							{isCurrentDayLoading ? (
+								<ThemedText>Loading...</ThemedText>
+							) : (
+								<>
+									<ThemedText type='title'>
+										{currentDayAttendance.checkOut || '--:--'}
+									</ThemedText>
+									<ThemedText>
+										{currentDayAttendance.checkOut ? 'PM' : ''}
+									</ThemedText>
+								</>
+							)}
 						</View>
 						<View style={styles.attendanceSectionText}>
-							<ThemedText>On time</ThemedText>
+							<ThemedText>
+								{currentDayAttendance.checkOut ? 'On time' : 'Not checked out'}
+							</ThemedText>
 						</View>
 					</View>
 				</ThemedView>

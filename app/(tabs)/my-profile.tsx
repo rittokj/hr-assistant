@@ -38,7 +38,7 @@ export default function ProfileScreen() {
 					<View style={styles.imageWrapper}>
 						{profileInfo?.profileImagePath ? (
 							<Image
-								source={profileInfo?.profileImagePath}
+								source={{ uri: profileInfo.profileImagePath }}
 								style={styles.profileImage}
 							/>
 						) : (
