@@ -9,6 +9,7 @@ import { ThemedText } from './ThemedText';
 import { ThemedView } from './ThemedView';
 import moment from 'moment';
 import { useLeaves } from '../app/contexts/LeaveContext';
+import { leaveRequestStatuses } from '@/app/constants/statusColor';
 
 type LeaveRequestProps = {
 	leave: {
@@ -25,6 +26,7 @@ type LeaveRequestProps = {
 
 function LeaveRequest({ leave }: LeaveRequestProps) {
 	const textColor = useThemeColor({}, 'text');
+	console.log(leave);
 	const { setSelectedLeaveRequest } = useLeaves();
 
 	const handlePress = () => {
@@ -97,17 +99,25 @@ function LeaveRequest({ leave }: LeaveRequestProps) {
 					style={{ fontWeight: '600' }}>{`${leave.leaveDays} Days`}</ThemedText>
 				<View
 					style={{
-						backgroundColor: useThemeColor(
-							{ light: '#ECE9F2', dark: '#333333' },
-							'background'
-						),
+						backgroundColor:
+							leaveRequestStatuses[leave?.wfstateConfigDTO?.wfstateId || 15]
+								.color,
 						paddingHorizontal: 10,
 						paddingVertical: 5,
 						width: 'auto',
 						borderRadius: 10,
 					}}>
-					<ThemedText style={styles.text}>
-						{leave.wfStateName || 'Pending with Supervisor'}
+					<ThemedText
+						style={[
+							styles.text,
+							{
+								fontWeight: '600',
+								color:
+									leaveRequestStatuses[leave?.wfstateConfigDTO?.wfstateId || 15]
+										.textColor,
+							},
+						]}>
+						{leave.wfStateName || ''}
 					</ThemedText>
 				</View>
 			</View>
