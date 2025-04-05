@@ -11,15 +11,46 @@ type Leave = {
 	// add other leave properties you need
 };
 
+type LeaveRequest = {
+	id: number;
+	leaveTypeDTO: {
+		leaveTypeName: string;
+	};
+	leaveFromDate: string;
+	leaveToDate: string;
+	status: string;
+	reason?: string;
+};
+
+type PaginationParams = {
+	offset: number;
+	limit: number;
+	search: string;
+	isExpired: number;
+	filterList: Array<{
+		whereString: string;
+		attributeName: string;
+		attributeValue: string;
+		attributeSecondValue: string;
+		attributeDataType: number;
+		operator: number;
+		condition: number;
+	}>;
+};
+
 type LeaveContextType = {
 	isLoading: boolean;
 	leaveTypesList: Leave[];
 	selectedLeaveDetails: Leave;
+	leaveRequests: LeaveRequest[];
+	selectedLeaveRequest: LeaveRequest | null;
 	setSelectedLeave: (leave: Leave) => Promise<void>;
+	setSelectedLeaveRequest: (leave: LeaveRequest) => void;
 	checkLeaveAvailability: (
 		employeeId: string,
 		leaveTypeId: string
 	) => Promise<void>;
+	getLeaveRequests: (params: PaginationParams) => Promise<void>;
 };
 
 export const LeaveContext = createContext<LeaveContextType | null>(null);
@@ -36,12 +67,24 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 	const { isAuthenticated } = useAuth();
 	const [isLoading, setIsLoading] = useState(false);
 	const [leaveTypesList, setLeaveTypesList] = useState<Leave[]>([]);
+	const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
 	const [selectedLeaveDetails, setSelectedLeaveDetails] = useState<Leave>({
 		id: 0,
 	});
+	const [selectedLeaveRequest, setSelectedLeaveRequest] =
+		useState<LeaveRequest | null>(null);
 
 	useEffect(() => {
-		if (isAuthenticated) getLeaveTypesList();
+		if (isAuthenticated) {
+			getLeaveTypesList();
+			getLeaveRequests({
+				offset: 0,
+				limit: 10,
+				search: '',
+				isExpired: 0,
+				filterList: [],
+			});
+		}
 	}, [isAuthenticated]);
 
 	const getLeaveTypesList = async () => {
@@ -49,6 +92,27 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 			setIsLoading(true);
 			const response = await axiosInstance.get(`${BASE_URL}api/LeaveType/List`);
 			if (response.data.status == 200) setLeaveTypesList(response.data.result);
+		} catch (error) {
+			throw error;
+		} finally {
+			setIsLoading(false);
+		}
+	};
+
+	const getLeaveRequests = async (params: PaginationParams) => {
+		try {
+			setIsLoading(true);
+			const response = await axiosInstance.post(
+				`${BASE_URL}api/LeaveRequest/List/Pagination`,
+				params,
+				{
+					headers: {
+						'X-Api-Key': '12345ABCDE67890FGHIJ',
+						'Content-Type': 'application/json',
+					},
+				}
+			);
+			if (response.data.status == 200) setLeaveRequests(response.data.result);
 		} catch (error) {
 			throw error;
 		} finally {
@@ -78,14 +142,22 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 		}
 	};
 
+	const handleSetSelectedLeaveRequest = (leave: LeaveRequest) => {
+		setSelectedLeaveRequest(leave);
+	};
+
 	return (
 		<LeaveContext.Provider
 			value={{
 				isLoading,
 				leaveTypesList,
 				selectedLeaveDetails,
+				leaveRequests,
+				selectedLeaveRequest,
 				checkLeaveAvailability,
 				setSelectedLeave,
+				setSelectedLeaveRequest: handleSetSelectedLeaveRequest,
+				getLeaveRequests,
 			}}>
 			{children}
 		</LeaveContext.Provider>

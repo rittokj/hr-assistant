@@ -4,6 +4,7 @@ import {
 	SafeAreaView,
 	FlatList,
 	Platform,
+	useColorScheme,
 } from 'react-native';
 
 import { Link } from 'expo-router';
@@ -12,22 +13,24 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import LeaveRequest from '@/components/LeaveRequest';
 import { useThemeColor } from '@/hooks/useThemeColor';
-
-const data = [
-	'#B0604D',
-	'#899F9C',
-	'#B3C680',
-	'#5C6265',
-	'#F5D399',
-	'#F1F1F1',
-	'#F1F1F1',
-	'#F1F1F1',
-	'#F1F1F1',
-	'#F1F1F1',
-];
+import { useLeaves } from '../contexts/LeaveContext';
+import { useEffect } from 'react';
 
 export default function LeavesScreen() {
 	const backgroundColor = useThemeColor({}, 'background');
+	const colorScheme = useColorScheme();
+	const { leaveRequests, isLoading, getLeaveRequests } = useLeaves();
+
+	useEffect(() => {
+		getLeaveRequests({
+			offset: 0,
+			limit: 10,
+			search: '',
+			isExpired: 0,
+			filterList: [],
+		});
+	}, []);
+
 	return (
 		<SafeAreaView style={[styles.container, { backgroundColor }]}>
 			<ThemedView style={styles.requestsContainer}>
@@ -46,7 +49,7 @@ export default function LeavesScreen() {
 					</Link>
 				</View>
 				<FlatList
-					data={data}
+					data={leaveRequests}
 					contentContainerStyle={{
 						padding: 20,
 						paddingTop: 10,
@@ -54,7 +57,18 @@ export default function LeavesScreen() {
 					}}
 					showsVerticalScrollIndicator={false}
 					ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-					renderItem={() => <LeaveRequest />}
+					renderItem={({ item }) => <LeaveRequest leave={item} />}
+					ListEmptyComponent={
+						isLoading ? (
+							<ThemedText style={{ textAlign: 'center', marginTop: 20 }}>
+								Loading...
+							</ThemedText>
+						) : (
+							<ThemedText style={{ textAlign: 'center', marginTop: 20 }}>
+								No leave requests found
+							</ThemedText>
+						)
+					}
 				/>
 			</ThemedView>
 		</SafeAreaView>
