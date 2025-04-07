@@ -1,10 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import Constants from 'expo-constants';
 
 import { axiosInstance } from '../utils/axios';
 import { useAuth } from './AuthContext';
-
-const BASE_URL = Constants.expoConfig?.extra.API_URL;
+import { API_URL } from '@/constants/constants';
 
 type Leave = {
 	id: number;
@@ -91,7 +89,7 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 	const getLeaveTypesList = async () => {
 		try {
 			setIsLoading(true);
-			const response = await axiosInstance.get(`${BASE_URL}api/LeaveType/List`);
+			const response = await axiosInstance.get(`${API_URL}api/LeaveType/List`);
 			if (response.data.status == 200) setLeaveTypesList(response.data.result);
 		} catch (error) {
 			throw error;
@@ -104,7 +102,7 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 		try {
 			setIsLoading(true);
 			const response = await axiosInstance.post(
-				`${BASE_URL}api/LeaveRequest/List/Pagination`,
+				`${API_URL}api/LeaveRequest/List/Pagination`,
 				params
 			);
 			if (response.data.status == 200) setLeaveRequests(response.data.result);
@@ -118,7 +116,7 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 	const applyLeave = async (params: PaginationParams) => {
 		try {
 			const response = await axiosInstance.post(
-				`${BASE_URL}api/LeaveRequest/Create`,
+				`${API_URL}api/LeaveRequest/Create`,
 				params
 			);
 			return response;
@@ -135,7 +133,7 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 	) => {
 		try {
 			return await axiosInstance.get(
-				`${BASE_URL}api/LeaveRequest/CheckEmployeeLeaveAvailability?employeeId=${employeeId}&leaveTypeId=${leaveTypeId}`
+				`${API_URL}api/LeaveRequest/CheckEmployeeLeaveAvailability?employeeId=${employeeId}&leaveTypeId=${leaveTypeId}`
 			);
 		} catch (error) {
 			throw error;

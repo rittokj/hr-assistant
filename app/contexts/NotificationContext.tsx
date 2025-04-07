@@ -1,9 +1,7 @@
 import { createContext, useContext, useState } from 'react';
-import Constants from 'expo-constants';
 
 import { axiosInstance } from '../utils/axios';
-
-const BASE_URL = Constants.expoConfig?.extra.API_URL;
+import { API_URL } from '@/constants/constants';
 
 interface Notification {
 	id: string;
@@ -46,7 +44,7 @@ export const NotificationProvider = ({
 		try {
 			setIsNotificationsLoading(true);
 			const response = await axiosInstance.get(
-				`${BASE_URL}api/NotificationLog/GetUnReadNotificationByUser?type=5400001&page=${page}&pageSize=10`
+				`${API_URL}api/NotificationLog/GetUnReadNotificationByUser?type=5400001&page=${page}&pageSize=10`
 			);
 			const newNotifications = response?.data?.result || [];
 

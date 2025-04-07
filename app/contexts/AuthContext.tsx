@@ -1,10 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Constants from 'expo-constants';
 
 import { axiosInstance } from '../utils/axios';
-
-const BASE_URL = Constants.expoConfig?.extra.API_URL;
+import { API_URL } from '@/constants/constants';
 
 type AuthTokens = {
 	accessToken: string | null;
@@ -70,7 +68,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const login = async (userName: string, password: string) => {
 		try {
 			const response = await axiosInstance.post(
-				`${BASE_URL}api/Authenticate/Token`,
+				`${API_URL}api/Authenticate/Token`,
 				{
 					userName,
 					password,
@@ -100,7 +98,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 	const getProfileInfo = async (userId: string) => {
 		try {
 			const response = await axiosInstance.get(
-				`${BASE_URL}api/Employee/Detail?id=${parseInt(userId)}`
+				`${API_URL}api/Employee/Detail?id=${parseInt(userId)}`
 			);
 			setProfileInfo(response?.data?.result);
 		} catch (error) {

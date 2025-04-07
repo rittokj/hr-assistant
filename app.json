@@ -47,8 +47,6 @@
 			"typedRoutes": true
 		},
 		"extra": {
-			"API_URL": "https://stg.accorelab.com/",
-			"API_KEY": "12345ABCDE67890FGHIJ",
 			"router": {
 				"origin": false
 			},
