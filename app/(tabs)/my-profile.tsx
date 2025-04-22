@@ -18,7 +18,7 @@ import DefaultUserImageIcon from '@/assets/svgs/DefaultUserImage';
 
 export default function ProfileScreen() {
 	const colorScheme = useColorScheme();
-	const { profileInfo } = useAuth();
+	const { profileInfo, logout } = useAuth();
 	return (
 		<SafeAreaView style={styles.container}>
 			<ThemedView style={styles.requestsContainer}>
@@ -135,6 +135,16 @@ export default function ProfileScreen() {
 								/>
 							</TouchableOpacity>
 						))}
+						<TouchableOpacity
+							onPress={logout}
+							style={[
+								styles.linksItem,
+								{
+									backgroundColor: '#FF3B30',
+								},
+							]}>
+							<ThemedText style={{ color: '#fff' }}>Logout</ThemedText>
+						</TouchableOpacity>
 					</View>
 				</ScrollView>
 			</ThemedView>

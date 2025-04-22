@@ -327,7 +327,6 @@ export default function LeaveFormScreen() {
 					});
 					setFormData(formDataModel);
 					navigation.goBack();
-					console.log('res', res);
 					Toast.show({
 						type: 'success',
 						text1: 'Leave request submitted successfully.',
@@ -335,7 +334,6 @@ export default function LeaveFormScreen() {
 					});
 				})
 				.catch((err) => {
-					console.log('err', err);
 					Toast.show({
 						type: 'error',
 						text1: 'Submission failed',

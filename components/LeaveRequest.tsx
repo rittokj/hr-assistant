@@ -26,7 +26,6 @@ type LeaveRequestProps = {
 
 function LeaveRequest({ leave }: LeaveRequestProps) {
 	const textColor = useThemeColor({}, 'text');
-	console.log(leave);
 	const { setSelectedLeaveRequest } = useLeaves();
 
 	const handlePress = () => {

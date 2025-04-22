@@ -10,23 +10,16 @@ import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import PaySlip from '@/components/PaySlip';
 import PaySlipDetails from '@/components/PaySlipDetails';
-import { useState } from 'react';
-
-const data = [
-	'#B0604D',
-	'#899F9C',
-	'#B3C680',
-	'#5C6265',
-	'#F5D399',
-	'#F1F1F1',
-	'#F1F1F1',
-	'#F1F1F1',
-	'#F1F1F1',
-	'#F1F1F1',
-];
+import { useEffect, useState } from 'react';
+import { usePayslip } from '../contexts/PayslipContext';
 
 export default function PaySlipScreen() {
+	const { payslips, isLoading, error, fetchPayslips } = usePayslip();
 	const [open, setOpen] = useState(false);
+	console.log('payslips', payslips);
+	useEffect(() => {
+		fetchPayslips();
+	}, []);
 
 	return (
 		<KeyboardAvoidingView
@@ -41,7 +34,7 @@ export default function PaySlipScreen() {
 					</ThemedText>
 				</View>
 				<FlatList
-					data={data}
+					data={payslips}
 					contentContainerStyle={{
 						padding: 20,
 						paddingTop: 10,
@@ -49,9 +42,10 @@ export default function PaySlipScreen() {
 					}}
 					showsVerticalScrollIndicator={false}
 					ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-					renderItem={() => (
+					renderItem={({ item }) => (
 						<PaySlip
 							open={open}
+							slip={item}
 							setOpen={setOpen}
 						/>
 					)}

@@ -108,8 +108,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 	const logout = async () => {
 		try {
-			await AsyncStorage.multiRemove(['accessToken', 'refreshToken']);
-			setTokens({ accessToken: null, refreshToken: null });
+			await AsyncStorage.multiRemove([
+				'accessToken',
+				'refreshToken',
+				'employeeId',
+			]);
+			setTokens({ accessToken: null, refreshToken: null, employeeId: null });
 		} catch (error) {
 			console.error('Logout error:', error);
 			throw error;

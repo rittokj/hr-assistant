@@ -22,6 +22,7 @@ import { LeaveProvider } from './contexts/LeaveContext';
 import { AttendanceProvider } from './contexts/AttendanceContext';
 import { toastConfig } from './utils/toastConfig';
 import { NotificationProvider } from './contexts/NotificationContext';
+import { PayslipProvider } from './contexts/PayslipContext';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -214,9 +215,11 @@ export default function RootLayout() {
 					<NotificationProvider>
 						<LeaveProvider>
 							<AttendanceProvider>
-								<StackLayout />
-								<ToastManager config={toastConfig} />
-								<StatusBar style='auto' />
+								<PayslipProvider>
+									<StackLayout />
+									<ToastManager config={toastConfig} />
+									<StatusBar style='auto' />
+								</PayslipProvider>
 							</AttendanceProvider>
 						</LeaveProvider>
 					</NotificationProvider>
