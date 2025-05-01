@@ -16,7 +16,6 @@ import { usePayslip } from '../contexts/PayslipContext';
 export default function PaySlipScreen() {
 	const { payslips, isLoading, error, fetchPayslips } = usePayslip();
 	const [open, setOpen] = useState(false);
-	console.log('payslips', payslips);
 	useEffect(() => {
 		fetchPayslips();
 	}, []);

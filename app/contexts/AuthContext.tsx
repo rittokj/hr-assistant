@@ -52,14 +52,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 				AsyncStorage.getItem('refreshToken'),
 				AsyncStorage.getItem('employeeId'),
 			]);
-			setTokens({
-				accessToken,
-				refreshToken,
-				employeeId,
-			});
-			if (employeeId) getProfileInfo(employeeId);
+			if (accessToken && refreshToken && employeeId) {
+				setTokens({
+					accessToken,
+					refreshToken,
+					employeeId,
+				});
+				getProfileInfo(employeeId, null);
+			}
 		} catch (error) {
-			console.error('Error loading tokens:', error);
 		} finally {
 			setIsLoading(false);
 		}
@@ -67,40 +68,51 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
 	const login = async (userName: string, password: string) => {
 		try {
-			const response = await axiosInstance.post(
-				`${API_URL}api/Authenticate/Token`,
-				{
-					userName,
-					password,
-					refreshToken: '',
-				}
-			);
-			const accessToken = response?.data?.result?.tokenModel?.token;
-			const refreshToken = response?.data?.result?.tokenModel?.refreshToken;
-			const employeeId = response?.data?.result?.user?.employeeId;
-			await Promise.all([
-				AsyncStorage.setItem('accessToken', accessToken),
-				AsyncStorage.setItem('refreshToken', refreshToken),
-				AsyncStorage.setItem('employeeId', `${employeeId}`),
-			]);
-			if (employeeId) getProfileInfo(employeeId);
-
-			setTokens({
-				accessToken,
-				refreshToken,
-				employeeId,
+			return new Promise((resolve, reject) => {
+				axiosInstance
+					.post(`${API_URL}api/Authenticate/Token`, {
+						userName,
+						password,
+						refreshToken: '',
+					})
+					.then((response) => {
+						if (response?.data?.result?.user?.employeeId) {
+							console.log(response?.data?.result?.user);
+							const { tokenModel, user } = response?.data?.result;
+							Promise.all([
+								AsyncStorage.setItem('accessToken', tokenModel.token),
+								AsyncStorage.setItem('refreshToken', tokenModel.refreshToken),
+								AsyncStorage.setItem('employeeId', `${user.employeeId}`),
+							]);
+							setTokens({
+								accessToken: tokenModel.token,
+								refreshToken: tokenModel.refreshToken,
+								employeeId: user.employeeId,
+							});
+							getProfileInfo(user.employeeId, () => {
+								resolve(user.employeeId);
+							});
+						}
+						reject('No response');
+					})
+					.catch((err) => {
+						reject(err);
+					});
 			});
 		} catch (error) {
 			throw error;
 		}
 	};
 
-	const getProfileInfo = async (userId: string) => {
+	const getProfileInfo = async (userId: string, callback: any) => {
 		try {
 			const response = await axiosInstance.get(
 				`${API_URL}api/Employee/Detail?id=${parseInt(userId)}`
 			);
-			setProfileInfo(response?.data?.result);
+			if (response?.data?.result) {
+				setProfileInfo(response.data.result);
+				if (callback) callback();
+			}
 		} catch (error) {
 			throw error;
 		}
@@ -115,7 +127,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 			]);
 			setTokens({ accessToken: null, refreshToken: null, employeeId: null });
 		} catch (error) {
-			console.error('Logout error:', error);
 			throw error;
 		}
 	};
@@ -126,7 +137,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 				tokens,
 				profileInfo,
 				isLoading,
-				isAuthenticated: !!tokens.accessToken,
+				isAuthenticated: Boolean(profileInfo?.employeeID),
 				login,
 				logout,
 			}}>

@@ -44,12 +44,14 @@ export default function HomeScreen() {
 		currentDayAttendance,
 		weeklyAttendance,
 		fetchCurrentDayAttendance,
+		fetchCurrentWeekAttendance,
 		isCurrentDayLoading,
-		isWeeklyLoading,
+		isCurrentWeekLoading,
 	} = useAttendance();
 
 	useEffect(() => {
 		fetchCurrentDayAttendance();
+		fetchCurrentWeekAttendance();
 	}, [profileInfo?.employeeID]);
 
 	const chartData = weeklyAttendance.map((att) => ({
@@ -98,7 +100,7 @@ export default function HomeScreen() {
 						</Link>
 					</View>
 					<View style={styles.bodyGraphSection}>
-						{isWeeklyLoading ? (
+						{isCurrentWeekLoading ? (
 							<ThemedText style={{ textAlign: 'center', padding: 20 }}>
 								Loading weekly data...
 							</ThemedText>

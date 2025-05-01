@@ -63,8 +63,9 @@ interface AttendanceContextType {
 	};
 	weeklyAttendance: AttendanceData[];
 	fetchCurrentDayAttendance: () => Promise<void>;
+	fetchCurrentWeekAttendance: () => Promise<void>;
 	isCurrentDayLoading: boolean;
-	isWeeklyLoading: boolean;
+	isCurrentWeekLoading: boolean;
 }
 
 const AttendanceContext = createContext<AttendanceContextType | undefined>(
@@ -87,7 +88,7 @@ export function AttendanceProvider({
 	const [attendanceList, setAttendanceList] = useState<AttendanceData[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [isCurrentDayLoading, setIsCurrentDayLoading] = useState(false);
-	const [isWeeklyLoading, setIsWeeklyLoading] = useState(false);
+	const [isCurrentWeekLoading, setIsCurrentWeekLoading] = useState(false);
 	const [summary, setSummary] = useState<AttendanceSummary>({
 		totalAttendance: 0,
 		totalLeaves: 0,
@@ -254,6 +255,56 @@ export function AttendanceProvider({
 		}
 	};
 
+	const fetchCurrentWeekAttendance = async () => {
+		console.log('profileInfo', profileInfo);
+		if (!profileInfo?.employeeID) return;
+		setIsCurrentWeekLoading(true);
+		try {
+			const currentDate = moment().format('MM/DD/YYYY');
+
+			const response = await axiosInstance.get(
+				`api/Attendance/GetEmployeeAttDetailByWeek?employeeId=${profileInfo.employeeID}&attDate=${currentDate}`,
+				{
+					offset: 0,
+					limit: 10,
+					search: '',
+					employeeId: profileInfo.employeeID,
+					departmentId: 0,
+					year: 2025,
+					month: 4,
+				}
+			);
+			console.log(JSON.stringify(response));
+			// const attList = response?.data?.result.attendanceDetDTOList;
+			// const checkIn = attList?.find((i) => i.typeId === 1);
+			// const checkOut = attList?.find((i) => i.typeId === 2);
+			// setCurrentDayAttendance({
+			// 	checkIn: {
+			// 		time: checkIn?.attendanceTime
+			// 			? moment(checkIn.attendanceTime, 'HH:mm:ss').format('hh.mm')
+			// 			: '',
+			// 		division: checkIn?.attendanceTime
+			// 			? moment(checkIn.attendanceTime, 'HH:mm:ss').format('A')
+			// 			: '--',
+			// 		id: checkIn?.attendanceId,
+			// 	},
+			// 	checkOut: {
+			// 		time: checkOut?.attendanceTime
+			// 			? moment(checkOut.attendanceTime, 'HH:mm:ss').format('hh.mm')
+			// 			: '',
+			// 		division: checkOut?.attendanceTime
+			// 			? moment(checkOut.attendanceTime, 'HH:mm:ss').format('A')
+			// 			: '--',
+			// 		id: checkOut?.attendanceId || 0,
+			// 	},
+			// });
+		} catch (error) {
+			console.log('error', JSON.stringify(error));
+		} finally {
+			setIsCurrentWeekLoading(false);
+		}
+	};
+
 	return (
 		<AttendanceContext.Provider
 			value={{
@@ -268,8 +319,9 @@ export function AttendanceProvider({
 				currentDayAttendance,
 				weeklyAttendance,
 				fetchCurrentDayAttendance,
+				fetchCurrentWeekAttendance,
 				isCurrentDayLoading,
-				isWeeklyLoading,
+				isCurrentWeekLoading,
 			}}>
 			{children}
 		</AttendanceContext.Provider>

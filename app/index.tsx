@@ -29,8 +29,13 @@ const LoginScreen = () => {
 	const handleLogin = async () => {
 		try {
 			setError(null);
-			await login(username, password);
-			navigation.navigate('(tabs)' as never);
+			login(username, password)
+				.then(() => {
+					navigation.navigate('(tabs)' as never);
+				})
+				.catch((err) => {
+					setError(err);
+				});
 		} catch (err) {
 			if (err instanceof AxiosError) {
 				setError(err.response?.data?.message || 'Login failed');
