@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 					refreshToken,
 					employeeId,
 				});
-				getProfileInfo(employeeId, null);
+				getProfileInfo(employeeId, null, null);
 			}
 		} catch (error) {
 		} finally {
@@ -89,9 +89,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 								refreshToken: tokenModel.refreshToken,
 								employeeId: user.employeeId,
 							});
-							getProfileInfo(user.employeeId, () => {
-								resolve(user.employeeId);
-							});
+							getProfileInfo(
+								user.employeeId,
+								() => resolve(user.employeeId),
+								() => reject()
+							);
 						}
 						reject('No response');
 					})
@@ -104,14 +106,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		}
 	};
 
-	const getProfileInfo = async (userId: string, callback: any) => {
+	const getProfileInfo = async (
+		userId: string,
+		callback1: any,
+		callback2: any
+	) => {
 		try {
 			const response = await axiosInstance.get(
 				`${API_URL}api/Employee/Detail?id=${parseInt(userId)}`
 			);
 			if (response?.data?.result) {
 				setProfileInfo(response.data.result);
-				if (callback) callback();
+				if (callback1) callback1();
+			} else {
+				if (callback2) callback2();
 			}
 		} catch (error) {
 			throw error;

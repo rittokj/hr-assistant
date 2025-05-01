@@ -1,17 +1,12 @@
+import React, { useEffect, useState } from 'react';
+import { Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { AxiosError } from 'axios';
+import { useNavigation } from 'expo-router';
+import { Toast } from 'toastify-react-native';
+
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedTextInput } from '@/components/ThemedTextInput';
 import { ThemedView } from '@/components/ThemedView';
-import { useNavigation } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import {
-	View,
-	Text,
-	TextInput,
-	TouchableOpacity,
-	StyleSheet,
-	Image,
-} from 'react-native';
-import { AxiosError } from 'axios';
 import { useAuth } from './contexts/AuthContext';
 
 const LoginScreen = () => {
@@ -34,13 +29,28 @@ const LoginScreen = () => {
 					navigation.navigate('(tabs)' as never);
 				})
 				.catch((err) => {
-					setError(err);
+					Toast.show({
+						type: 'error',
+						text1: `Login failed!`,
+						position: 'bottom',
+						visibilityTime: 3000,
+					});
 				});
 		} catch (err) {
 			if (err instanceof AxiosError) {
-				setError(err.response?.data?.message || 'Login failed');
+				Toast.show({
+					type: 'error',
+					text1: err.response?.data?.message || 'Login failed',
+					position: 'bottom',
+					visibilityTime: 3000,
+				});
 			} else {
-				setError('An unexpected error occurred');
+				Toast.show({
+					type: 'error',
+					text1: `An unexpected error occurred!`,
+					position: 'bottom',
+					visibilityTime: 3000,
+				});
 			}
 		} finally {
 		}
