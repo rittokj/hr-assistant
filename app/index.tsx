@@ -14,7 +14,7 @@ const LoginScreen = () => {
 	const { login, isLoading, isAuthenticated } = useAuth();
 	const [username, setUsername] = useState('employee1');
 	const [password, setPassword] = useState('123');
-	const [error, setError] = useState<string | null>(null);
+
 	useEffect(() => {
 		if (isAuthenticated) {
 			navigation.navigate('(tabs)' as never);
@@ -23,7 +23,6 @@ const LoginScreen = () => {
 
 	const handleLogin = async () => {
 		try {
-			setError(null);
 			login(username, password)
 				.then(() => {
 					navigation.navigate('(tabs)' as never);
@@ -52,8 +51,16 @@ const LoginScreen = () => {
 					visibilityTime: 3000,
 				});
 			}
-		} finally {
 		}
+	};
+
+	const handleForgotPassword = () => {
+		Toast.show({
+			type: 'info',
+			text1: 'Forgot password functionality coming soon!',
+			position: 'bottom',
+			visibilityTime: 3000,
+		});
 	};
 
 	return (
@@ -63,8 +70,6 @@ const LoginScreen = () => {
 				style={styles.logo}
 			/>
 			<ThemedText style={styles.title}>Welcome to HR App</ThemedText>
-
-			{error && <ThemedText style={styles.error}>{error}</ThemedText>}
 
 			<ThemedTextInput
 				style={styles.input}
@@ -92,7 +97,7 @@ const LoginScreen = () => {
 				</Text>
 			</TouchableOpacity>
 
-			<TouchableOpacity>
+			<TouchableOpacity onPress={handleForgotPassword}>
 				<Text style={styles.forgotPassword}>Forgot Password?</Text>
 			</TouchableOpacity>
 		</ThemedView>
@@ -104,7 +109,6 @@ const styles = StyleSheet.create({
 		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center',
-		// backgroundColor: "#f4f4f4",
 		padding: 20,
 	},
 	logo: {
@@ -141,10 +145,6 @@ const styles = StyleSheet.create({
 	forgotPassword: {
 		marginTop: 10,
 		color: '#007bff',
-	},
-	error: {
-		color: 'red',
-		marginBottom: 10,
 	},
 	buttonDisabled: {
 		opacity: 0.7,

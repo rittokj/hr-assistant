@@ -3,6 +3,17 @@ import { useAuth } from './AuthContext';
 import { axiosInstance } from '../utils/axios';
 import { API_URL } from '@/constants/constants';
 
+type SalaryTypeDTO = {
+	salaryTypeCode: string;
+	salaryTypeName: string;
+};
+
+type PayrollGenerationDetDTO = {
+	salaryTypeDTO: SalaryTypeDTO;
+	addAmount?: number;
+	dedAmount?: number;
+};
+
 type Payslip = {
 	id: number;
 	employeeId: number;
@@ -16,6 +27,7 @@ type Payslip = {
 	payrollMonth: number;
 	payrollYear: string;
 	totalAmount: string;
+	payrollGenerationDetDTOList?: PayrollGenerationDetDTO[];
 	// Add other payslip fields as needed
 };
 
@@ -25,7 +37,8 @@ interface PayslipContextType {
 	isLoading: boolean;
 	error: string | null;
 	fetchPayslips: () => Promise<void>;
-	fetchPayslipDetails: (pkValue: string) => Promise<void>;
+	fetchPayslipDetails: (id: string) => Promise<void>;
+	resetPayslipDetails: () => void;
 }
 
 const PayslipContext = createContext<PayslipContextType | undefined>(undefined);
@@ -44,46 +57,30 @@ export function PayslipProvider({ children }: { children: React.ReactNode }) {
 		setError(null);
 
 		try {
-			const url = `${API_URL}api/PayrollGeneration/GetPayrollGenerationDetailByMonth`;
-			const response = await axiosInstance.post(
-				url,
-				JSON.stringify({
-					search: '',
-					employeeId: profileInfo.employeeID,
-					departmentId: null,
-					year: '2025',
-					month: '03',
-					isApprove: 1,
-				})
-			);
-
-			if (response.data.result) {
-				setPayslips(response.data.result);
+			const url = `${API_URL}api/PayrollGeneration/GetPaySlipList`;
+			const response = await axiosInstance.post(url, {
+				employeeId: profileInfo.employeeID,
+			});
+			const result = response?.data?.result;
+			if (result?.length) {
+				setPayslips(result);
 			}
 		} catch (err) {
 			setError('Failed to fetch payslip data');
-			console.error('Error fetching payslip:', JSON.stringify(err));
 		} finally {
 			setIsLoading(false);
 		}
 	};
 
-	const fetchPayslipDetails = async (pkValue: string) => {
-		if (!pkValue) return;
+	const fetchPayslipDetails = async (paySlipId: string) => {
+		if (!paySlipId) return;
 
 		setIsLoading(true);
 		try {
-			const response = await axiosInstance.get(
-				// `${API_URL}PayrollGeneration/GetDetail?pkValue=${pkValue}`
-				`https://stg.accorelab.com/PayrollGeneration/GetDetail?pkValue=3259&%22%22&_=1745345976793`
-			);
-			console.log('response', JSON.stringify(response));
+			const url = `${API_URL}api/PayrollGeneration/GetPayslipDetail?id=${paySlipId}`;
+			const response = await axiosInstance.get(url);
 			if (response.data.status === 200) {
-				const details = response.data.result.map((item: any) => ({
-					type: item.type,
-					addition: item.addition || 0,
-					deduction: item.deduction || 0,
-				}));
+				const details = response.data.result;
 				setPayslipDetails(details);
 			}
 		} catch (error) {
@@ -91,6 +88,10 @@ export function PayslipProvider({ children }: { children: React.ReactNode }) {
 		} finally {
 			setIsLoading(false);
 		}
+	};
+
+	const resetPayslipDetails = () => {
+		setPayslipDetails(null);
 	};
 
 	return (
@@ -102,6 +103,7 @@ export function PayslipProvider({ children }: { children: React.ReactNode }) {
 				error,
 				fetchPayslips,
 				fetchPayslipDetails,
+				resetPayslipDetails,
 			}}>
 			{children}
 		</PayslipContext.Provider>

@@ -7,32 +7,48 @@ import BottomSheet, {
 
 import CloseIcon from '@/assets/svgs/Close';
 import { usePayslip } from '@/app/contexts/PayslipContext';
+import PayslipDetailsLoader from './PayslipDetailsLoader';
 
-function PaySlipDetails({ open, setOpen, title = 'Februry' }) {
+interface PaySlipDetailsProps {
+	open: string;
+	setOpen: (value: string) => void;
+	title?: string;
+}
+
+function PaySlipDetails({
+	open,
+	setOpen,
+	title = 'February',
+}: PaySlipDetailsProps) {
 	const sheetRef = useRef<BottomSheet>(null);
-	const { fetchPayslipDetails, payslipDetails } = usePayslip();
-	console.log('payslipDetails', payslipDetails);
+	const {
+		fetchPayslipDetails,
+		payslipDetails,
+		isLoading,
+		resetPayslipDetails,
+	} = usePayslip();
 	const snapPoints = useMemo(() => ['65%'], []);
 
 	// callbacks
-	const handleSnapPress = useCallback((index) => {
+	const handleSnapPress = useCallback((index: number) => {
 		sheetRef.current?.snapToIndex(index);
 	}, []);
 
 	const closeModal = useCallback(() => {
-		setOpen(false);
+		setOpen('');
 		sheetRef.current?.close();
+		resetPayslipDetails();
 	}, []);
 
 	useEffect(() => {
-		if (open) {
+		if (open !== '') {
 			handleSnapPress(0);
-			fetchPayslipDetails('3259&%22%22&_=1745345976793');
+			fetchPayslipDetails(open);
 		}
 	}, [open]);
 
 	const renderBackdrop = useCallback(
-		(props) => (
+		(props: any) => (
 			<BottomSheetBackdrop
 				{...props}
 				disappearsOnIndex={-1}
@@ -44,6 +60,8 @@ function PaySlipDetails({ open, setOpen, title = 'Februry' }) {
 		[]
 	);
 
+	const salaryItems = payslipDetails?.payrollGenerationDetDTOList || [];
+
 	return (
 		<BottomSheet
 			ref={sheetRef}
@@ -52,187 +70,128 @@ function PaySlipDetails({ open, setOpen, title = 'Februry' }) {
 			index={-1}
 			handleComponent={null}
 			backdropComponent={renderBackdrop}>
-			{/* <View
-        style={{
-          padding: 20,
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <Text>February</Text>
-        <TouchableOpacity onPress={closeModal}>
-          <BellIcon />
-        </TouchableOpacity>
-      </View> */}
-			<View
-				style={{
-					padding: 20,
-					flexDirection: 'row',
-					justifyContent: 'space-between',
-					alignItems: 'center',
-				}}>
-				<Text style={{ fontWeight: '600', fontSize: 16 }}>{title}</Text>
+			<View style={styles.headerContainer}>
+				<Text style={styles.headerText}>{title}</Text>
 				<TouchableOpacity
 					onPress={closeModal}
-					style={{ padding: 10, backgroundColor: '#000', borderRadius: 20 }}>
+					style={styles.closeButton}>
 					<CloseIcon color='#fff' />
 				</TouchableOpacity>
 			</View>
 			<BottomSheetScrollView>
-				{/* Title Section */}
-				<View
-					style={{
-						flexDirection: 'row',
-						marginHorizontal: 20,
-						paddingBottom: 15,
-						justifyContent: 'space-between',
-						borderBottomColor: '#ECE9F2',
-						borderBottomWidth: 1,
-					}}>
-					<View style={{ flex: 1 }}>
-						<Text style={{ fontSize: 14, textAlign: 'left' }}>Type</Text>
-					</View>
-					<View style={{ flex: 1 }}>
-						<Text style={{ fontSize: 14, textAlign: 'left' }}>Addition</Text>
-					</View>
-					<View style={{ flex: 1 }}>
-						<Text style={{ fontSize: 14, textAlign: 'right' }}>Deduction</Text>
-					</View>
-				</View>
-				{/* Basic Section */}
-				<View
-					style={{
-						flexDirection: 'row',
-						marginHorizontal: 20,
-						marginTop: 20,
-						paddingBottom: 15,
-						justifyContent: 'space-between',
-						borderBottomColor: '#ECE9F2',
-						borderBottomWidth: 1,
-					}}>
-					<View style={{ flex: 1 }}>
-						<Text style={{ fontSize: 14, textAlign: 'left' }}>Basic</Text>
-					</View>
-					<View style={{ flex: 1 }}>
-						<Text style={{ fontSize: 14, textAlign: 'left' }}>AED 3000</Text>
-					</View>
-					<View style={{ flex: 1 }}>
-						<Text style={{ fontSize: 14, textAlign: 'right' }}></Text>
-					</View>
-				</View>
-				{/* HRA Section */}
-				<View
-					style={{
-						flexDirection: 'row',
-						marginHorizontal: 20,
-						marginTop: 20,
-						paddingBottom: 15,
-						justifyContent: 'space-between',
-						borderBottomColor: '#ECE9F2',
-						borderBottomWidth: 1,
-					}}>
-					<View style={{ flex: 1 }}>
-						<Text style={{ fontSize: 14, textAlign: 'left' }}>HRA</Text>
-					</View>
-					<View style={{ flex: 1 }}>
-						<Text style={{ fontSize: 14, textAlign: 'left' }}>AED 2000</Text>
-					</View>
-					<View style={{ flex: 1 }}>
-						<Text style={{ fontSize: 14, textAlign: 'right' }}></Text>
-					</View>
-				</View>
+				{isLoading || !payslipDetails ? (
+					<PayslipDetailsLoader />
+				) : (
+					<>
+						{/* Title Section */}
+						<View style={styles.titleContainer}>
+							<View style={styles.flex}>
+								<Text style={styles.textLeft}>Type</Text>
+							</View>
+							<View style={styles.flex}>
+								<Text style={styles.textLeft}>Addition</Text>
+							</View>
+							<View style={styles.flex}>
+								<Text style={styles.textRight}>Deduction</Text>
+							</View>
+						</View>
 
-				{/* Fine Section */}
-				<View
-					style={{
-						flexDirection: 'row',
-						marginHorizontal: 20,
-						marginTop: 20,
-						paddingBottom: 15,
-						justifyContent: 'space-between',
-						borderBottomColor: '#ECE9F2',
-						borderBottomWidth: 1,
-					}}>
-					<View style={{ flex: 1 }}>
-						<Text style={{ fontSize: 14, textAlign: 'left' }}>Fine</Text>
-					</View>
-					<View style={{ flex: 1 }}>
-						<Text style={{ fontSize: 14, textAlign: 'left' }}></Text>
-					</View>
-					<View style={{ flex: 1 }}>
-						<Text style={{ fontSize: 14, textAlign: 'right' }}>AED 200</Text>
-					</View>
-				</View>
+						{/* Salary Items */}
+						{salaryItems.map((item, index) => (
+							<View
+								key={index}
+								style={styles.itemContainer}>
+								<View style={styles.flex}>
+									<Text style={styles.textLeft}>
+										{item.salaryTypeDTO.salaryTypeName}
+									</Text>
+								</View>
+								<View style={styles.flex}>
+									<Text style={styles.textLeft}>
+										{item.addAmount ? `AED ${item.addAmount}` : ''}
+									</Text>
+								</View>
+								<View style={styles.flex}>
+									<Text style={styles.textRight}>
+										{item.dedAmount ? `AED ${item.dedAmount}` : ''}
+									</Text>
+								</View>
+							</View>
+						))}
 
-				{/* Loan Section */}
-				<View
-					style={{
-						flexDirection: 'row',
-						marginHorizontal: 20,
-						marginTop: 20,
-						paddingBottom: 15,
-						justifyContent: 'space-between',
-						borderBottomColor: '#ECE9F2',
-						borderBottomWidth: 1,
-					}}>
-					<View style={{ flex: 1 }}>
-						<Text style={{ fontSize: 14, textAlign: 'left' }}>Loan</Text>
-					</View>
-					<View style={{ flex: 1 }}>
-						<Text style={{ fontSize: 14, textAlign: 'left' }}></Text>
-					</View>
-					<View style={{ flex: 1 }}>
-						<Text style={{ fontSize: 14, textAlign: 'right' }}>AED 200</Text>
-					</View>
-				</View>
-
-				{/* Total Section */}
-				<View
-					style={{
-						flexDirection: 'row',
-						padding: 20,
-						marginTop: -1,
-						justifyContent: 'space-between',
-						backgroundColor: '#ECE9F2',
-					}}>
-					<View style={{ flex: 1 }}>
-						<Text style={{ fontSize: 14, textAlign: 'left' }}>Total</Text>
-					</View>
-					<View style={{ flex: 1 }}>
-						<Text style={{ fontSize: 14, textAlign: 'left' }}></Text>
-					</View>
-					<View style={{ flex: 1 }}>
-						<Text style={{ fontSize: 14, textAlign: 'right' }}>AED 4600</Text>
-					</View>
-				</View>
-				<View>
-					<TouchableOpacity
-						style={{
-							margin: 20,
-							padding: 15,
-							backgroundColor: '#007aff1a',
-							justifyContent: 'center',
-							alignItems: 'center',
-							borderRadius: 10,
-						}}>
-						<Text style={{ color: '#007aff' }}>Download Pay Slip</Text>
-					</TouchableOpacity>
-				</View>
+						{/* Total Section */}
+						<View style={styles.totalContainer}>
+							<View style={styles.flex}>
+								<Text style={styles.textLeft}>Total</Text>
+							</View>
+							<View style={styles.flex}>
+								<Text style={styles.textLeft}></Text>
+							</View>
+							<View style={styles.flex}>
+								<Text style={styles.textRight}>{`AED ${
+									payslipDetails?.totalAmount || 0
+								}`}</Text>
+							</View>
+						</View>
+						<View>
+							<TouchableOpacity style={styles.downloadButton}>
+								<Text style={styles.downloadButtonText}>Download Pay Slip</Text>
+							</TouchableOpacity>
+						</View>
+					</>
+				)}
 			</BottomSheetScrollView>
 		</BottomSheet>
 	);
 }
+
 const styles = StyleSheet.create({
-	container: {
-		flex: 1,
-		backgroundColor: 'grey',
-	},
-	contentContainer: {
-		flex: 1,
-		padding: 36,
+	headerContainer: {
+		padding: 20,
+		flexDirection: 'row',
+		justifyContent: 'space-between',
 		alignItems: 'center',
 	},
+	headerText: { fontWeight: '600', fontSize: 16 },
+	closeButton: { padding: 10, backgroundColor: '#000', borderRadius: 20 },
+	titleContainer: {
+		flexDirection: 'row',
+		marginHorizontal: 20,
+		paddingBottom: 15,
+		justifyContent: 'space-between',
+		borderBottomColor: '#ECE9F2',
+		borderBottomWidth: 1,
+	},
+	itemContainer: {
+		flexDirection: 'row',
+		marginHorizontal: 20,
+		marginTop: 20,
+		paddingBottom: 15,
+		justifyContent: 'space-between',
+		borderBottomColor: '#ECE9F2',
+		borderBottomWidth: 1,
+	},
+	totalContainer: {
+		flexDirection: 'row',
+		padding: 20,
+		marginTop: -1,
+		justifyContent: 'space-between',
+		backgroundColor: '#ECE9F2',
+	},
+	downloadButton: {
+		margin: 20,
+		padding: 15,
+		backgroundColor: '#007aff1a',
+		justifyContent: 'center',
+		alignItems: 'center',
+		borderRadius: 10,
+	},
+	downloadButtonText: {
+		color: '#007aff',
+	},
+	textLeft: { fontSize: 14, textAlign: 'left' },
+	textRight: { fontSize: 14, textAlign: 'right' },
+	flex: { flex: 1 },
 });
 
 export default PaySlipDetails;

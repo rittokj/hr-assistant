@@ -1,10 +1,4 @@
-import {
-	StyleSheet,
-	View,
-	SafeAreaView,
-	FlatList,
-	KeyboardAvoidingView,
-} from 'react-native';
+import { StyleSheet, View, FlatList, KeyboardAvoidingView } from 'react-native';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -14,8 +8,8 @@ import { useEffect, useState } from 'react';
 import { usePayslip } from '../contexts/PayslipContext';
 
 export default function PaySlipScreen() {
-	const { payslips, isLoading, error, fetchPayslips } = usePayslip();
-	const [open, setOpen] = useState(false);
+	const { payslips, fetchPayslips } = usePayslip();
+	const [open, setOpen] = useState('');
 	useEffect(() => {
 		fetchPayslips();
 	}, []);
@@ -43,7 +37,6 @@ export default function PaySlipScreen() {
 					ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
 					renderItem={({ item }) => (
 						<PaySlip
-							open={open}
 							slip={item}
 							setOpen={setOpen}
 						/>
