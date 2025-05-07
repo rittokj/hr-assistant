@@ -64,13 +64,6 @@ const styles = StyleSheet.create({
 	container: {
 		padding: 20,
 	},
-	placeholderWrapper: {
-		// justifyContent: 'center',
-		// height: 'auto',
-		// backgroundColor: '#F5F5F5',
-		// marginHorizontal: 20,
-		// paddingVertical: 20,
-	},
 	placeholderContainer: {
 		flexDirection: 'row',
 		alignItems: 'center',
