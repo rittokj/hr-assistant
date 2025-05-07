@@ -1,5 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+	View,
+	Text,
+	StyleSheet,
+	TouchableOpacity,
+	ActivityIndicator,
+} from 'react-native';
 import BottomSheet, {
 	BottomSheetBackdrop,
 	BottomSheetScrollView,
@@ -25,7 +31,9 @@ function PaySlipDetails({
 		fetchPayslipDetails,
 		payslipDetails,
 		isLoading,
+		isDownloading,
 		resetPayslipDetails,
+		downloadPayslip,
 	} = usePayslip();
 	const snapPoints = useMemo(() => ['65%'], []);
 
@@ -39,6 +47,10 @@ function PaySlipDetails({
 		sheetRef.current?.close();
 		resetPayslipDetails();
 	}, []);
+
+	const handleDownload = async () => {
+		downloadPayslip(open);
+	};
 
 	useEffect(() => {
 		if (open !== '') {
@@ -134,8 +146,32 @@ function PaySlipDetails({
 							</View>
 						</View>
 						<View>
-							<TouchableOpacity style={styles.downloadButton}>
-								<Text style={styles.downloadButtonText}>Download Pay Slip</Text>
+							<TouchableOpacity
+								style={[
+									styles.downloadButton,
+									isDownloading && styles.downloadButtonDisabled,
+								]}
+								onPress={handleDownload}
+								disabled={isDownloading}>
+								{isDownloading ? (
+									<View style={styles.downloadButtonContent}>
+										<ActivityIndicator
+											color='#007aff'
+											size='small'
+										/>
+										<Text
+											style={[
+												styles.downloadButtonText,
+												styles.downloadButtonTextMargin,
+											]}>
+											Downloading...
+										</Text>
+									</View>
+								) : (
+									<Text style={styles.downloadButtonText}>
+										Download Pay Slip
+									</Text>
+								)}
 							</TouchableOpacity>
 						</View>
 					</>
@@ -186,8 +222,18 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		borderRadius: 10,
 	},
+	downloadButtonDisabled: {
+		opacity: 0.7,
+	},
+	downloadButtonContent: {
+		flexDirection: 'row',
+		alignItems: 'center',
+	},
 	downloadButtonText: {
 		color: '#007aff',
+	},
+	downloadButtonTextMargin: {
+		marginLeft: 8,
 	},
 	textLeft: { fontSize: 14, textAlign: 'left' },
 	textRight: { fontSize: 14, textAlign: 'right' },

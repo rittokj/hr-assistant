@@ -18,7 +18,12 @@
 				"backgroundColor": "#ffffff"
 			},
 			"package": "com.hr_assistant",
-			"permissions": ["INTERNET"]
+			"permissions": [
+				"READ_EXTERNAL_STORAGE",
+				"WRITE_EXTERNAL_STORAGE",
+				"MEDIA_LIBRARY",
+				"INTERNET"
+			]
 		},
 		"web": {
 			"bundler": "metro",

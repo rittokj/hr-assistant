@@ -1,4 +1,10 @@
-import { StyleSheet, View, FlatList, KeyboardAvoidingView } from 'react-native';
+import {
+	StyleSheet,
+	View,
+	FlatList,
+	KeyboardAvoidingView,
+	useColorScheme,
+} from 'react-native';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -8,6 +14,7 @@ import { useEffect, useState } from 'react';
 import { usePayslip } from '../contexts/PayslipContext';
 
 export default function PaySlipScreen() {
+	const colorScheme = useColorScheme();
 	const { payslips, fetchPayslips } = usePayslip();
 	const [open, setOpen] = useState('');
 	useEffect(() => {
@@ -17,7 +24,10 @@ export default function PaySlipScreen() {
 	return (
 		<KeyboardAvoidingView
 			behavior='padding'
-			style={{ flex: 1, backgroundColor: '#ECE9F2' }}>
+			style={{
+				flex: 1,
+				backgroundColor: colorScheme === 'dark' ? '#171717' : '#ECE9F2',
+			}}>
 			<ThemedView style={styles.requestsContainer}>
 				<View style={styles.requestsTitleSection}>
 					<ThemedText
@@ -52,9 +62,6 @@ export default function PaySlipScreen() {
 }
 
 const styles = StyleSheet.create({
-	container: {
-		backgroundColor: '#FFF',
-	},
 	requestsTitleSection: {
 		justifyContent: 'space-between',
 		flexDirection: 'row',

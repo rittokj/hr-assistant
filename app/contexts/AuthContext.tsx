@@ -77,7 +77,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 					})
 					.then((response) => {
 						if (response?.data?.result?.user?.employeeId) {
-							console.log(response?.data?.result?.user);
 							const { tokenModel, user } = response?.data?.result;
 							Promise.all([
 								AsyncStorage.setItem('accessToken', tokenModel.token),

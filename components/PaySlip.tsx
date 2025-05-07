@@ -3,21 +3,7 @@ import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import AngleIcon from '@/assets/svgs/Angle';
 import { ThemedText } from './ThemedText';
-
-const months = [
-	'January',
-	'February',
-	'March',
-	'April',
-	'May',
-	'June',
-	'July',
-	'August',
-	'September',
-	'October',
-	'November',
-	'December',
-];
+import moment = require('moment');
 
 interface PaySlipProps {
 	setOpen: (id: string) => void;
@@ -37,9 +23,13 @@ function PaySlip({ setOpen, slip }: PaySlipProps) {
 			<View style={styles.itemContainer}>
 				<View style={styles.titleContainer}>
 					<ThemedText style={styles.title}>
-						{`${slip?.payrollMonth ? months[slip.payrollMonth - 1] : ''} ${
-							slip?.payrollYear ? slip.payrollYear : ''
-						}`}
+						{`${
+							slip?.payrollMonth
+								? moment()
+										.month(slip.payrollMonth - 1)
+										.format('MMMM')
+								: ''
+						} ${slip?.payrollYear ? slip.payrollYear : ''}`}
 					</ThemedText>
 				</View>
 				<TouchableOpacity onPress={() => setOpen(slip.payrollGenerationId)}>

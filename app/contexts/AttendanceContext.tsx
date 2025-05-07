@@ -256,7 +256,6 @@ export function AttendanceProvider({
 	};
 
 	const fetchCurrentWeekAttendance = async () => {
-		console.log('profileInfo', profileInfo);
 		if (!profileInfo?.employeeID) return;
 		setIsCurrentWeekLoading(true);
 		try {
@@ -274,7 +273,6 @@ export function AttendanceProvider({
 					month: 4,
 				}
 			);
-			console.log(JSON.stringify(response));
 			// const attList = response?.data?.result.attendanceDetDTOList;
 			// const checkIn = attList?.find((i) => i.typeId === 1);
 			// const checkOut = attList?.find((i) => i.typeId === 2);
@@ -299,7 +297,6 @@ export function AttendanceProvider({
 			// 	},
 			// });
 		} catch (error) {
-			console.log('error', JSON.stringify(error));
 		} finally {
 			setIsCurrentWeekLoading(false);
 		}
