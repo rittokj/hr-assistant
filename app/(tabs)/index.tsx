@@ -9,9 +9,10 @@ import {
 	Dimensions,
 	useColorScheme,
 } from 'react-native';
-
+import moment from 'moment';
 import { Link } from 'expo-router';
 import { BarChart } from 'react-native-gifted-charts';
+
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import BellIcon from '@/assets/svgs/Bell';
@@ -23,7 +24,8 @@ import { useThemeColor } from '@/hooks/useThemeColor';
 import { useAuth } from '../contexts/AuthContext';
 import { useAttendance } from '../contexts/AttendanceContext';
 import DefaultUserImageIcon from '@/assets/svgs/DefaultUserImage';
-import moment from 'moment';
+import { useLeaves } from '../contexts/LeaveContext';
+import RecentRequestsLoader from '@/components/RecentRequestsLoader';
 
 interface ProfileInfo {
 	profileImagePath?: string;
@@ -48,6 +50,7 @@ export default function HomeScreen() {
 		isCurrentDayLoading,
 		isCurrentWeekLoading,
 	} = useAttendance();
+	const { recenteaveRequests, isRecenteaveRequestsLoading } = useLeaves();
 
 	useEffect(() => {
 		fetchCurrentDayAttendance();
@@ -208,21 +211,25 @@ export default function HomeScreen() {
 						<RnSwipeButton />
 					</View>
 				</ThemedView>
-				<ThemedView style={styles.requestsContainer}>
-					<View style={styles.requestsTitleSection}>
-						<ThemedText type='defaultSemiBold'>My Requests</ThemedText>
-						<Link href='/leaves'>
-							<ThemedText
-								lightColor='#007AFF'
-								darkColor='#007AFF'>
-								View All
-							</ThemedText>
-						</Link>
-					</View>
-					<View style={styles.requestsSection}>
-						<RequestsCarousel />
-					</View>
-				</ThemedView>
+				{isRecenteaveRequestsLoading ? (
+					<RecentRequestsLoader />
+				) : recenteaveRequests?.length ? (
+					<ThemedView style={styles.requestsContainer}>
+						<View style={styles.requestsTitleSection}>
+							<ThemedText type='defaultSemiBold'>My Requests</ThemedText>
+							<Link href='/leaves'>
+								<ThemedText
+									lightColor='#007AFF'
+									darkColor='#007AFF'>
+									View All
+								</ThemedText>
+							</Link>
+						</View>
+						<View style={styles.requestsSection}>
+							<RequestsCarousel />
+						</View>
+					</ThemedView>
+				) : null}
 			</ScrollView>
 		</SafeAreaView>
 	);

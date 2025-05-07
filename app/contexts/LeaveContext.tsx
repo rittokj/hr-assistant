@@ -38,9 +38,11 @@ type PaginationParams = {
 
 type LeaveContextType = {
 	isLoading: boolean;
+	isRecenteaveRequestsLoading: boolean;
 	leaveTypesList: Leave[];
 	selectedLeaveDetails: Leave;
 	leaveRequests: LeaveRequest[];
+	recenteaveRequests: LeaveRequest[];
 	selectedLeaveRequest: LeaveRequest | null;
 	setSelectedLeave: (leave: Leave) => Promise<void>;
 	setSelectedLeaveRequest: (leave: LeaveRequest) => void;
@@ -63,10 +65,15 @@ export const useLeaves = () => {
 };
 
 export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
-	const { isAuthenticated } = useAuth();
+	const { isAuthenticated, profileInfo } = useAuth();
+	const [isRecenteaveRequestsLoading, setRecenteaveRequestsLoading] =
+		useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [leaveTypesList, setLeaveTypesList] = useState<Leave[]>([]);
 	const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
+	const [recenteaveRequests, setRecentLeaveRequests] = useState<LeaveRequest[]>(
+		[]
+	);
 	const [selectedLeaveDetails, setSelectedLeaveDetails] = useState<Leave>({
 		id: 0,
 	});
@@ -82,6 +89,9 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 				search: '',
 				isExpired: 0,
 				filterList: [],
+			});
+			getRecentLeaveRequests({
+				employeeId: profileInfo.employeeID,
 			});
 		}
 	}, [isAuthenticated]);
@@ -110,6 +120,22 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 			throw error;
 		} finally {
 			setIsLoading(false);
+		}
+	};
+
+	const getRecentLeaveRequests = async (params: PaginationParams) => {
+		try {
+			setRecenteaveRequestsLoading(true);
+			const response = await axiosInstance.post(
+				`${API_URL}api/LeaveRequest/GetPendingLeaveRequest`,
+				params
+			);
+			if (response.data.status == 200)
+				setRecentLeaveRequests(response.data.result);
+		} catch (error) {
+			throw error;
+		} finally {
+			setRecenteaveRequestsLoading(false);
 		}
 	};
 
@@ -157,9 +183,11 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 		<LeaveContext.Provider
 			value={{
 				isLoading,
+				isRecenteaveRequestsLoading,
 				leaveTypesList,
 				selectedLeaveDetails,
 				leaveRequests,
+				recenteaveRequests,
 				selectedLeaveRequest,
 				checkLeaveAvailability,
 				applyLeave,

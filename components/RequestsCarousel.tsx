@@ -8,10 +8,12 @@ import {
 	View,
 } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
+import moment = require('moment');
 
 import AngleIcon from '@/assets/svgs/Angle';
 import { Link } from 'expo-router';
 import { ThemedText } from './ThemedText';
+import { useLeaves } from '@/app/contexts/LeaveContext';
 
 const { width } = Dimensions.get('window');
 
@@ -25,6 +27,7 @@ const defaultDataWith6Colors = [
 ];
 
 function RequestsCarousel() {
+	const { recenteaveRequests } = useLeaves();
 	return (
 		<Carousel
 			loop={false}
@@ -38,7 +41,7 @@ function RequestsCarousel() {
 				parallaxScrollingScale: 0.9,
 				parallaxScrollingOffset: 50,
 			}}
-			data={defaultDataWith6Colors}
+			data={recenteaveRequests}
 			style={{ width: '100%' }}
 			renderItem={({ item }) => <RequestsCarouselItem item={item} />}
 		/>
@@ -47,6 +50,12 @@ function RequestsCarousel() {
 
 function RequestsCarouselItem({ item }: { item: string }) {
 	const colorScheme = useColorScheme();
+	const fromDate = moment(item?.fromDateText, 'DD/MM/YYYY');
+	const toDate = moment(item?.toDateText, 'DD/MM/YYYY');
+	const formattedRange = `${fromDate.format('D MMMM')} to ${toDate.format(
+		'D MMMM'
+	)}`;
+
 	return (
 		<View
 			style={[
@@ -67,11 +76,9 @@ function RequestsCarouselItem({ item }: { item: string }) {
 						alignItems: 'flex-start',
 					}}>
 					<ThemedText style={styles.title}>Leave Request</ThemedText>
-					<ThemedText
-						style={[
-							styles.text,
-							{ marginTop: 5 },
-						]}>{`Annual leave request | 12 February to 13 March`}</ThemedText>
+					<ThemedText style={[styles.text, { marginTop: 5 }]}>{`${
+						item?.leaveTypeDTO?.leaveTypeName || ''
+					} | ${formattedRange}`}</ThemedText>
 					<View
 						style={{
 							backgroundColor: colorScheme === 'dark' ? '#171717' : '#fff',
@@ -81,7 +88,9 @@ function RequestsCarouselItem({ item }: { item: string }) {
 							width: 'auto',
 							borderRadius: 10,
 						}}>
-						<ThemedText style={styles.text}>Pending with Supervisor</ThemedText>
+						<ThemedText style={styles.text}>
+							{item?.wfStateName || ''}
+						</ThemedText>
 					</View>
 				</View>
 				<TouchableOpacity>
@@ -109,7 +118,6 @@ const styles = StyleSheet.create({
 	title: {
 		fontSize: 18,
 		fontWeight: '600',
-		// fontWeight: "bold",
 	},
 	text: {
 		fontSize: 14,
