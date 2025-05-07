@@ -26,6 +26,7 @@ import { useAttendance } from '../contexts/AttendanceContext';
 import DefaultUserImageIcon from '@/assets/svgs/DefaultUserImage';
 import { useLeaves } from '../contexts/LeaveContext';
 import RecentRequestsLoader from '@/components/RecentRequestsLoader';
+import GraphLoader from '@/components/GraphLoader';
 
 interface ProfileInfo {
 	profileImagePath?: string;
@@ -57,9 +58,9 @@ export default function HomeScreen() {
 		fetchCurrentWeekAttendance();
 	}, [profileInfo?.employeeID]);
 
-	const chartData = weeklyAttendance.map((att) => ({
+	const chartData = weeklyAttendance?.attendanceMonthDetail?.map((att) => ({
 		value: att.totalHours ? parseFloat(att.totalHours) : 0,
-		label: moment(att.date).format('ddd'),
+		label: moment(att.attDate).format('ddd'),
 	}));
 
 	return (
@@ -102,12 +103,10 @@ export default function HomeScreen() {
 							</ThemedText>
 						</Link>
 					</View>
-					<View style={styles.bodyGraphSection}>
-						{isCurrentWeekLoading ? (
-							<ThemedText style={{ textAlign: 'center', padding: 20 }}>
-								Loading weekly data...
-							</ThemedText>
-						) : (
+					{isCurrentWeekLoading ? (
+						<GraphLoader />
+					) : (
+						<View style={styles.bodyGraphSection}>
 							<BarChart
 								data={chartData}
 								frontColor='#3185FE'
@@ -129,8 +128,8 @@ export default function HomeScreen() {
 								showXAxisIndices={false}
 								dashWidth={0}
 							/>
-						)}
-					</View>
+						</View>
+					)}
 				</ThemedView>
 				<ThemedView style={styles.attendanceContainer}>
 					<View style={styles.attendanceSection}>
@@ -211,7 +210,7 @@ export default function HomeScreen() {
 						<RnSwipeButton />
 					</View>
 				</ThemedView>
-				{isRecenteaveRequestsLoading ? (
+				{!isRecenteaveRequestsLoading ? (
 					<RecentRequestsLoader />
 				) : recenteaveRequests?.length ? (
 					<ThemedView style={styles.requestsContainer}>

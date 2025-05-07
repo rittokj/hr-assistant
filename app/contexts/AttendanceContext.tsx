@@ -259,43 +259,13 @@ export function AttendanceProvider({
 		if (!profileInfo?.employeeID) return;
 		setIsCurrentWeekLoading(true);
 		try {
-			const currentDate = moment().format('MM/DD/YYYY');
-
-			const response = await axiosInstance.get(
-				`api/Attendance/GetEmployeeAttDetailByWeek?employeeId=${profileInfo.employeeID}&attDate=${currentDate}`,
+			const response = await axiosInstance.post(
+				`api/Attendance/GetEmployeeAttDetailByWeek`,
 				{
-					offset: 0,
-					limit: 10,
-					search: '',
 					employeeId: profileInfo.employeeID,
-					departmentId: 0,
-					year: 2025,
-					month: 4,
 				}
 			);
-			// const attList = response?.data?.result.attendanceDetDTOList;
-			// const checkIn = attList?.find((i) => i.typeId === 1);
-			// const checkOut = attList?.find((i) => i.typeId === 2);
-			// setCurrentDayAttendance({
-			// 	checkIn: {
-			// 		time: checkIn?.attendanceTime
-			// 			? moment(checkIn.attendanceTime, 'HH:mm:ss').format('hh.mm')
-			// 			: '',
-			// 		division: checkIn?.attendanceTime
-			// 			? moment(checkIn.attendanceTime, 'HH:mm:ss').format('A')
-			// 			: '--',
-			// 		id: checkIn?.attendanceId,
-			// 	},
-			// 	checkOut: {
-			// 		time: checkOut?.attendanceTime
-			// 			? moment(checkOut.attendanceTime, 'HH:mm:ss').format('hh.mm')
-			// 			: '',
-			// 		division: checkOut?.attendanceTime
-			// 			? moment(checkOut.attendanceTime, 'HH:mm:ss').format('A')
-			// 			: '--',
-			// 		id: checkOut?.attendanceId || 0,
-			// 	},
-			// });
+			setWeeklyAttendance(response?.data?.result[0]);
 		} catch (error) {
 		} finally {
 			setIsCurrentWeekLoading(false);
