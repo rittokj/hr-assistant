@@ -6,6 +6,7 @@ import {
 	TouchableOpacity,
 	ActivityIndicator,
 } from 'react-native';
+import moment from 'moment';
 import BottomSheet, {
 	BottomSheetBackdrop,
 	BottomSheetScrollView,
@@ -83,7 +84,15 @@ function PaySlipDetails({
 			handleComponent={null}
 			backdropComponent={renderBackdrop}>
 			<View style={styles.headerContainer}>
-				<Text style={styles.headerText}>{title}</Text>
+				<Text style={styles.headerText}>
+					{`${
+						payslipDetails?.payrollMonth
+							? moment()
+									.month(payslipDetails.payrollMonth - 1)
+									.format('MMMM')
+							: ''
+					} ${payslipDetails?.payrollYear ? payslipDetails.payrollYear : ''}`}
+				</Text>
 				<TouchableOpacity
 					onPress={closeModal}
 					style={styles.closeButton}>
