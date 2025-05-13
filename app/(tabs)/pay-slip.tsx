@@ -34,7 +34,7 @@ export default function PaySlipScreen() {
 			behavior='padding'
 			style={{
 				flex: 1,
-				backgroundColor: colorScheme === 'dark' ? '#171717' : '#ECE9F2',
+				backgroundColor: colorScheme === 'dark' ? '#171717' : '#FFF',
 			}}>
 			<ThemedView style={styles.requestsContainer}>
 				<View style={styles.requestsTitleSection}>

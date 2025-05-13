@@ -1,6 +1,4 @@
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import {
 	View,
 	FlatList,
@@ -9,8 +7,12 @@ import {
 	useColorScheme,
 	ActivityIndicator,
 } from 'react-native';
+import { WebView } from 'react-native-webview';
+
 import { useNotification } from './contexts/NotificationContext';
 import NotificationLoader from '@/components/NotificationLoader';
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
 
 interface Notification {
 	id: string;
@@ -18,11 +20,38 @@ interface Notification {
 	timestamp: string;
 }
 
+const notifications = [
+	{
+		notificationLogId: 27001,
+		notificationMessage:
+			'<p>Dear Team,</p>\n                <p>I would like to bring to your attention an important information regarding unemployment\n                insurance. It’s mandatory to enroll in the (ILOE), also known as Unemployment Insurance\n                Scheme, in time to avoid the fine amount of AED 400/-. All employees who are residing in\n                UAE on employment visa, after processing the emirates ID are individually responsible to\n                enroll in this insurance, company will not be liable for any employee insurance or the fine\n                amount due to the overdue.</p>\n                <p>Please follow the below guideline to apply ILOE insurance through a mobile device:</p>\n                <ul>\n                    <li>Download the ILOE App from Google Play Store.</li>\n                    <li>Create an account or log in if you already have one.</li>\n                    <li>Use the app’s search feature or navigate to the insurance section to find the ILOE\n                    insurance (i.e., annual, 12 months insurance for AED 63).</li>\n                    <li>Enter the required information for a quote, such as personal details, business\n                    information, and coverage needs.</li>\n                    <li>Proceed with the amount in the quote and pay via bank transfer.</li>\n                    <li>Review your application details and submit them. You may receive confirmation and\n                    further instructions via email or in-app notifications.</li>\n                </ul>',
+	},
+	{
+		notificationLogId: 27000,
+		notificationMessage:
+			'<p>Dear Team,</p>\n                <p>I would like to bring to your attention an important information regarding unemployment\n                insurance. It’s mandatory to enroll in the (ILOE), also known as Unemployment Insurance\n                Scheme, in time to avoid the fine amount of AED 400/-. All employees who are residing in\n                UAE on employment visa, after processing the emirates ID are individually responsible to\n                enroll in this insurance, company will not be liable for any employee insurance or the fine\n                amount due to the overdue.</p>\n                <p>Please follow the below guideline to apply ILOE insurance through a mobile device:</p>\n                <ul>\n                    <li>Download the ILOE App from Google Play Store.</li>\n                    <li>Create an account or log in if you already have one.</li>\n                    <li>Use the app’s search feature or navigate to the insurance section to find the ILOE\n                    insurance (i.e., annual, 12 months insurance for AED 63).</li>\n                    <li>Enter the required information for a quote, such as personal details, business\n                    information, and coverage needs.</li>\n                    <li>Proceed with the amount in the quote and pay via bank transfer.</li>\n                    <li>Review your application details and submit them. You may receive confirmation and\n                    further instructions via email or in-app notifications.</li>\n                </ul>',
+	},
+	{
+		notificationLogId: 10996,
+		notificationMessage:
+			'<div>aaaaaaaaa aaaaaaaa aaaaaaaa aaaaaa aaaaaaaa aaaaaaaaaa aaaaaaaaaaaaa&nbsp; f</div>',
+	},
+	{
+		notificationLogId: 9997,
+		notificationMessage:
+			'<p>Dear Team,</p>\n                <p>I would like to bring to your attention an important information regarding unemployment\n                insurance. It’s mandatory to enroll in the (ILOE), also known as Unemployment Insurance\n                Scheme, in time to avoid the fine amount of AED 400/-. All employees who are residing in\n                UAE on employment visa, after processing the emirates ID are individually responsible to\n                enroll in this insurance, company will not be liable for any employee insurance or the fine\n                amount due to the overdue.</p>\n                <p>Please follow the below guideline to apply ILOE insurance through a mobile device:</p>\n                <ul>\n                    <li>Download the ILOE App from Google Play Store.</li>\n                    <li>Create an account or log in if you already have one.</li>\n                    <li>Use the app’s search feature or navigate to the insurance section to find the ILOE\n                    insurance (i.e., annual, 12 months insurance for AED 63).</li>\n                    <li>Enter the required information for a quote, such as personal details, business\n                    information, and coverage needs.</li>\n                    <li>Proceed with the amount in the quote and pay via bank transfer.</li>\n                    <li>Review your application details and submit them. You may receive confirmation and\n                    further instructions via email or in-app notifications.</li>\n                </ul>',
+	},
+	{
+		notificationLogId: 9996,
+		notificationMessage:
+			'<p>Dear Team,</p>\n                <p>I would like to bring to your attention an important information regarding unemployment\n                insurance. It’s mandatory to enroll in the (ILOE), also known as Unemployment Insurance\n                Scheme, in time to avoid the fine amount of AED 400/-. All employees who are residing in\n                UAE on employment visa, after processing the emirates ID are individually responsible to\n                enroll in this insurance, company will not be liable for any employee insurance or the fine\n                amount due to the overdue.</p>\n                <p>Please follow the below guideline to apply ILOE insurance through a mobile device:</p>\n                <ul>\n                    <li>Download the ILOE App from Google Play Store.</li>\n                    <li>Create an account or log in if you already have one.</li>\n                    <li>Use the app’s search feature or navigate to the insurance section to find the ILOE\n                    insurance (i.e., annual, 12 months insurance for AED 63).</li>\n                    <li>Enter the required information for a quote, such as personal details, business\n                    information, and coverage needs.</li>\n                    <li>Proceed with the amount in the quote and pay via bank transfer.</li>\n                    <li>Review your application details and submit them. You may receive confirmation and\n                    further instructions via email or in-app notifications.</li>\n                </ul>',
+	},
+];
 const NotificationsScreen = () => {
 	const {
 		isNotificationsLoading,
 		getNotifications,
-		notifications,
+		// notifications,
 		hasMore,
 		currentPage,
 	} = useNotification();
@@ -36,7 +65,7 @@ const NotificationsScreen = () => {
 		if (!isNotificationsLoading && hasMore) {
 			getNotifications(currentPage + 1);
 		}
-	}, [isNotificationsLoading, hasMore, currentPage, getNotifications]);
+	}, [isNotificationsLoading, hasMore, currentPage]);
 
 	const renderItem = ({ item }: { item: Notification }) => (
 		<ThemedView
@@ -44,8 +73,10 @@ const NotificationsScreen = () => {
 				styles.notificationItem,
 				{ backgroundColor: colorScheme === 'dark' ? '#000' : '#eee' },
 			]}>
-			<ThemedText style={styles.message}>{item.message}</ThemedText>
-			<ThemedText style={styles.timestamp}>{item.timestamp}</ThemedText>
+			<WebView
+				style={styles.container}
+				source={{ html: item.notificationMessage }}
+			/>
 		</ThemedView>
 	);
 
@@ -68,13 +99,13 @@ const NotificationsScreen = () => {
 			</View>
 		);
 	};
-
+	console.log('isNotificationsLoading', isNotificationsLoading);
 	return (
 		<ThemedView style={styles.container}>
 			{currentPage === 1 && isNotificationsLoading ? (
 				<NotificationLoader />
 			) : (
-				<FlatList<Notification>
+				<FlatList
 					data={notifications}
 					keyExtractor={(item) => item.id}
 					renderItem={renderItem}

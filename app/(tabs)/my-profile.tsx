@@ -15,10 +15,161 @@ import { ThemedView } from '@/components/ThemedView';
 import AngleRightIcon from '@/assets/svgs/AngleRight';
 import { useAuth } from '../contexts/AuthContext';
 import DefaultUserImageIcon from '@/assets/svgs/DefaultUserImage';
+import { useState } from 'react';
+import { API_URL } from '@/constants/constants';
 
 export default function ProfileScreen() {
 	const colorScheme = useColorScheme();
-	const { profileInfo, logout } = useAuth();
+	const [selected, setSelected] = useState('personalDetails');
+	const { profileInfo, logout } = useAuth('');
+	console.log('profileInfo', JSON.stringify(profileInfo));
+	const profileInfoList = [
+		{
+			id: 'personalDetails',
+			label: 'Personal Details',
+			list: [
+				{
+					id: 'gender',
+					label: 'Gender',
+					value: profileInfo?.genderCdNavigationDTO?.lookUpName || '',
+				},
+				{
+					id: 'dob',
+					label: 'Date of Birth',
+					value: profileInfo?.dob || '',
+				},
+				{
+					id: 'email',
+					label: 'Email ID',
+					value: profileInfo?.emailId || '',
+				},
+				{
+					id: 'phone',
+					label: 'Mobile Number',
+					value: profileInfo?.mobileNo || '',
+				},
+				{
+					id: 'joining',
+					label: 'Joining Date',
+					value: profileInfo?.joinDateText || '',
+				},
+				{
+					id: 'designation',
+					label: 'Designation',
+					value: profileInfo?.designationDTO?.designationName || '',
+				},
+			],
+		},
+		{
+			id: 'professionalDetails',
+			label: 'Professional Details',
+			list: [
+				{
+					id: 'qualification',
+					label: 'Qualification',
+					value: profileInfo?.qualificationCdNavigationDTO?.lookUpName || '',
+				},
+				{
+					id: 'osd',
+					label: 'Offer Signed Date',
+					value: profileInfo?.offerSignedDateText || '',
+				},
+				{
+					id: 'department',
+					label: 'Department',
+					value: profileInfo?.departmentDTO?.departmentName || '',
+				},
+				{
+					id: 'reporting_to',
+					label: 'Reporting to',
+					value: profileInfo?.reportingTO || '',
+				},
+				{
+					id: 'Sponsor_Name',
+					label: 'Sponsor Name',
+					value: profileInfo?.sponsorName || '',
+				},
+				{
+					id: 'Weekly_Holiday',
+					label: 'Weekly Holiday',
+					value: profileInfo?.holiday || '',
+				},
+			],
+		},
+		{
+			id: 'documents',
+			label: 'Documents',
+			list: profileInfo?.employeeDocumentDTOList.map((i) => {
+				return {
+					id: i.documentTypeDTO.documentTypeCode,
+					label: i.documentTypeDTO.documentTypeName,
+					value:
+						i.documentTypeDTO.documentTypeCode === 'PPT'
+							? `Issue Date: ${i.issueDateText} \nExpiry Date: ${i.expiryDateText}`
+							: '',
+				};
+			}),
+		},
+		// {
+		// 	id: 'leaveInfo',
+		// 	label: 'Leave Info',
+		// 	list: [
+		// 		{
+		// 			id: 'Annual_leave',
+		// 			label: 'Annual leave',
+		// 			value: '',
+		// 		},
+		// 		{
+		// 			id: 'Sick_Leave',
+		// 			label: 'Sick Leave',
+		// 			value: '',
+		// 		},
+		// 		{
+		// 			id: 'Casual_Leave',
+		// 			label: 'Casual Leave',
+		// 			value: '',
+		// 		},
+		// 		{
+		// 			id: 'Unpaid_Leave',
+		// 			label: 'Unpaid Leave',
+		// 			value: '',
+		// 		},
+		// 	],
+		// },
+		{
+			id: 'salaryInfo',
+			label: 'Salary Info',
+			list: profileInfo?.employeeSalaryDTOList?.map((i) => {
+				return {
+					id: 'Total_Salary',
+					label: 'Salary',
+					value: `Total: ${i.totalSalary}\nDate From: ${i.dateFromText}\nVersion: ${i.version}`,
+				};
+			}),
+		},
+		{
+			id: 'Warning',
+			label: 'Warning',
+			list: [
+				{
+					id: 'Warning_Message',
+					label: 'Warning Message',
+					value: 'First Warning	',
+				},
+			],
+		},
+		{
+			id: 'Memo',
+			label: 'Memo',
+			list: [
+				{
+					id: 'Memo-Code',
+					label: 'Memo Code',
+					value: 'M20',
+				},
+			],
+		},
+	];
 	return (
 		<SafeAreaView style={styles.container}>
 			<ThemedView style={styles.requestsContainer}>
@@ -35,10 +186,18 @@ export default function ProfileScreen() {
 						paddingTop: 10,
 						paddingBottom: 120,
 					}}>
-					<View style={styles.imageWrapper}>
+					<View
+						style={[
+							styles.imageWrapper,
+							{
+								borderColor: colorScheme === 'dark' ? '#373737' : '#ECE9F2',
+							},
+						]}>
 						{profileInfo?.profileImagePath ? (
 							<Image
-								source={{ uri: profileInfo.profileImagePath }}
+								source={{
+									uri: `${API_URL}documents/${profileInfo.profileImagePath}`,
+								}}
 								style={styles.profileImage}
 							/>
 						) : (
@@ -61,79 +220,69 @@ export default function ProfileScreen() {
 							</ThemedText>
 						</View>
 					</View>
-					<View style={styles.detailsWrapper}>
-						{[
-							{
-								id: 'gender',
-								label: 'Gender',
-								value: profileInfo?.genderCdNavigationDTO?.lookUpName || '',
-							},
-							{
-								id: 'dob',
-								label: 'Date of Birth',
-								value: profileInfo?.dob || '',
-							},
-							{
-								id: 'email',
-								label: 'Email ID',
-								value: profileInfo?.emailId || '',
-							},
-							{
-								id: 'phone',
-								label: 'Mobile Number',
-								value: profileInfo?.mobileNo || '',
-							},
-							{
-								id: 'joining',
-								label: 'Joining Date',
-								value: profileInfo?.appointmentSignedDate || '',
-								type: 'date',
-							},
-							{
-								id: 'designation',
-								label: 'Designation',
-								value: profileInfo?.designationDTO?.designationName || '',
-							},
-						].map((item) => (
-							<View
-								key={item.id}
-								style={styles.detailsItem}>
-								<ThemedText>{item.label}</ThemedText>
-								<ThemedText>
-									{item?.type === 'date'
-										? moment(item.value).format('DD MMM YYYY')
-										: item.value}
-								</ThemedText>
-							</View>
-						))}
-					</View>
 					<View style={styles.linksWrapper}>
-						{[
-							{ id: 'personalDetails', label: 'Personal Details' },
-							{ id: 'professionalDetails', label: 'Professional Details' },
-							{ id: 'documents', label: 'Documents' },
-							{ id: 'salaryInfo', label: 'Salary Info' },
-							{ id: 'Warning', label: 'Warning' },
-							{ id: 'Memo', label: 'Memo' },
-						].map((item) => (
-							<TouchableOpacity
-								key={item.id}
-								style={[
-									styles.linksItem,
-									{
-										backgroundColor:
-											colorScheme === 'dark' ? '#373737' : '#ECE9F2',
-									},
-								]}>
-								<ThemedText
-									lightColor='#171717'
-									darkColor='#ccc'>
-									{item.label}
-								</ThemedText>
-								<AngleRightIcon
-									color={colorScheme === 'dark' ? '#ccc' : '#171717'}
-								/>
-							</TouchableOpacity>
+						{profileInfoList.map((item) => (
+							<View key={item.id}>
+								<TouchableOpacity
+									key={item.id}
+									onPress={() =>
+										setSelected((val) => (val === item.id ? '' : item.id))
+									}
+									style={[
+										styles.linksItem,
+										{
+											backgroundColor:
+												colorScheme === 'dark' ? '#373737' : '#ECE9F2',
+										},
+									]}>
+									<ThemedText
+										lightColor='#171717'
+										darkColor='#ccc'>
+										{item.label}
+									</ThemedText>
+									<View
+										style={{
+											transform: [
+												{ rotate: selected === item.id ? '90deg' : '0deg' },
+											],
+										}}>
+										<AngleRightIcon
+											color={colorScheme === 'dark' ? '#ccc' : '#171717'}
+										/>
+									</View>
+								</TouchableOpacity>
+								{selected === item.id ? (
+									<View
+										style={[
+											styles.detailsWrapper,
+											{
+												borderColor:
+													colorScheme === 'dark' ? '#373737' : '#ECE9F2',
+											},
+										]}>
+										{item?.list?.map((menuItem, index) => (
+											<View
+												key={menuItem.id}
+												style={[
+													styles.detailsItem,
+													{
+														borderBottomWidth:
+															item?.list?.length - 1 === index ? 0 : 1,
+														borderBottomColor:
+															colorScheme === 'dark' ? '#373737' : '#ECE9F2',
+													},
+												]}>
+												<ThemedText>{menuItem.label}</ThemedText>
+												<ThemedText>
+													{menuItem?.type === 'date'
+														? moment(menuItem.value).format('DD MMM YYYY')
+														: menuItem.value}
+												</ThemedText>
+											</View>
+										))}
+									</View>
+								) : null}
+							</View>
 						))}
 						<TouchableOpacity
 							onPress={logout}
@@ -170,21 +319,20 @@ const styles = StyleSheet.create({
 	profileImage: {
 		width: '100%',
 		height: 350,
-		objectFit: 'cover',
-		backgroundColor: '#373737',
+		objectFit: 'fill',
 	},
 	imageWrapper: {
 		position: 'relative',
 		borderRadius: 20,
 		overflow: 'hidden',
 		marginBottom: 20,
+		borderWidth: 1,
 	},
 	detailsWrapper: {
 		position: 'relative',
 		borderRadius: 15,
 		overflow: 'hidden',
 		marginBottom: 20,
-		borderColor: '#ECE9F2',
 		borderWidth: 1,
 		paddingHorizontal: 20,
 	},
@@ -192,10 +340,8 @@ const styles = StyleSheet.create({
 		width: '100%',
 		justifyContent: 'space-between',
 		flexDirection: 'row',
-		borderBottomColor: '#ECE9F2',
 		paddingBottom: 15,
 		paddingTop: 15,
-		borderBottomWidth: 1,
 	},
 	nameWrapper: {
 		position: 'absolute',

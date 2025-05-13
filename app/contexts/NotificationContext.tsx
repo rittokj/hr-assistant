@@ -46,6 +46,7 @@ export const NotificationProvider = ({
 			const response = await axiosInstance.get(
 				`${API_URL}api/NotificationLog/GetUnReadNotificationByUser?type=5400001&page=${page}&pageSize=10`
 			);
+			console.log('response', JSON.stringify(response));
 			const newNotifications = response?.data?.result || [];
 
 			if (page === 1) {
