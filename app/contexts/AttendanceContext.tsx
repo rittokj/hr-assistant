@@ -61,7 +61,7 @@ interface AttendanceContextType {
 		checkIn: Attendance;
 		checkOut: Attendance;
 	};
-	weeklyAttendance: AttendanceData[];
+	weeklyAttendance: any;
 	fetchCurrentDayAttendance: () => Promise<void>;
 	fetchCurrentWeekAttendance: () => Promise<void>;
 	isCurrentDayLoading: boolean;
@@ -101,9 +101,7 @@ export function AttendanceProvider({
 		checkIn: { time: '', division: '', id: 0 },
 		checkOut: { time: '', division: '', id: 0 },
 	});
-	const [weeklyAttendance, setWeeklyAttendance] = useState<AttendanceData[]>(
-		[]
-	);
+	const [weeklyAttendance, setWeeklyAttendance] = useState(null);
 
 	const getLastTwelveMonths = () => {
 		const months = [];

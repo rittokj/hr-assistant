@@ -5,6 +5,7 @@ import { ThemedText } from '@/components/ThemedText';
 import ArrowLeftIcon from '@/assets/svgs/ArrowLeft';
 import ArrowRightIcon from '@/assets/svgs/ArrowRight';
 import moment from 'moment';
+import { primaryColor } from '@/constants/Colors';
 
 function DailyAttendence({ attendance }: any) {
 	const colorScheme = useColorScheme();
@@ -83,7 +84,7 @@ function DailyAttendence({ attendance }: any) {
 										colorScheme === 'dark' ? '#272727' : '#E6F2FF',
 								},
 							]}>
-							<ArrowRightIcon color='#007AFF' />
+							<ArrowRightIcon color={primaryColor} />
 						</View>
 						<View>
 							<ThemedText style={styles.smallText}>Check in</ThemedText>
@@ -101,7 +102,7 @@ function DailyAttendence({ attendance }: any) {
 										colorScheme === 'dark' ? '#272727' : '#E6F2FF',
 								},
 							]}>
-							<ArrowLeftIcon color='#007AFF' />
+							<ArrowLeftIcon color={primaryColor} />
 						</View>
 						<View>
 							<ThemedText style={styles.smallText}>Check out</ThemedText>

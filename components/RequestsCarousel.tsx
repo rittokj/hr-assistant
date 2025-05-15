@@ -8,7 +8,7 @@ import {
 	View,
 } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
-import moment = require('moment');
+import moment from 'moment';
 
 import AngleIcon from '@/assets/svgs/Angle';
 import { Link } from 'expo-router';
@@ -17,17 +17,8 @@ import { useLeaves } from '@/app/contexts/LeaveContext';
 
 const { width } = Dimensions.get('window');
 
-const defaultDataWith6Colors = [
-	'#B0604D',
-	'#899F9C',
-	'#B3C680',
-	'#5C6265',
-	'#F5D399',
-	'#F1F1F1',
-];
-
 function RequestsCarousel() {
-	const { recenteaveRequests } = useLeaves();
+	const { recentLeaveRequests } = useLeaves();
 	return (
 		<Carousel
 			loop={false}
@@ -41,7 +32,7 @@ function RequestsCarousel() {
 				parallaxScrollingScale: 0.9,
 				parallaxScrollingOffset: 50,
 			}}
-			data={recenteaveRequests}
+			data={recentLeaveRequests}
 			style={{ width: '100%' }}
 			renderItem={({ item }) => <RequestsCarouselItem item={item} />}
 		/>

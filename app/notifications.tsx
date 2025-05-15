@@ -25,6 +25,7 @@ import NotificationLoader from '@/components/NotificationLoader';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import CloseIcon from '@/assets/svgs/Close';
+import { primaryColor } from '@/constants/Colors';
 
 interface Notification {
 	id: string;
@@ -123,7 +124,7 @@ const NotificationsScreen = () => {
 			<View style={styles.footerLoader}>
 				<ActivityIndicator
 					size='small'
-					color='#007AFF'
+					color={primaryColor}
 				/>
 			</View>
 		);

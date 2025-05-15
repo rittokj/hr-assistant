@@ -4,6 +4,7 @@ import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import AngleIcon from '@/assets/svgs/Angle';
 import { ThemedText } from './ThemedText';
 import moment = require('moment');
+import { primaryColor } from '@/constants/Colors';
 
 interface PaySlipProps {
 	setOpen: (id: string) => void;
@@ -119,7 +120,7 @@ const styles = StyleSheet.create({
 	iconContainer: {
 		width: 15,
 		height: 15,
-		backgroundColor: '#007AFF',
+		backgroundColor: primaryColor,
 		justifyContent: 'center',
 		alignItems: 'center',
 		borderRadius: 50,

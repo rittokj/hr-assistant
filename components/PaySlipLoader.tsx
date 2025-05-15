@@ -1,6 +1,7 @@
 import * as React from 'react';
 import ShimmerPlaceHolder from 'react-native-shimmer-placeholder';
 import { StyleSheet, Text, useColorScheme, View } from 'react-native';
+import { primaryColor } from '@/constants/Colors';
 
 function PaySlipLoaderItem() {
 	const darkTheme = useColorScheme() == 'dark';
@@ -127,7 +128,7 @@ const styles = StyleSheet.create({
 	iconContainer: {
 		width: 15,
 		height: 15,
-		backgroundColor: '#007AFF',
+		backgroundColor: primaryColor,
 		justifyContent: 'center',
 		alignItems: 'center',
 		borderRadius: 50,

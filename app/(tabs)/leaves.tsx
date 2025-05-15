@@ -15,6 +15,7 @@ import LeaveRequest from '@/components/LeaveRequest';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useLeaves } from '../contexts/LeaveContext';
 import { useEffect } from 'react';
+import { primaryColor } from '@/constants/Colors';
 
 export default function LeavesScreen() {
 	const backgroundColor = useThemeColor({}, 'background');
@@ -42,8 +43,8 @@ export default function LeavesScreen() {
 					</ThemedText>
 					<Link href='/leave-form'>
 						<ThemedText
-							darkColor='#007AFF'
-							lightColor='#007AFF'>
+							darkColor={primaryColor}
+							lightColor={primaryColor}>
 							Apply Leave
 						</ThemedText>
 					</Link>

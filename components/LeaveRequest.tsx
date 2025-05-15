@@ -10,6 +10,7 @@ import { ThemedView } from './ThemedView';
 import moment from 'moment';
 import { useLeaves } from '../app/contexts/LeaveContext';
 import { leaveRequestStatuses } from '@/app/constants/statusColor';
+import { primaryColor } from '@/constants/Colors';
 
 type LeaveRequestProps = {
 	leave: {
@@ -72,17 +73,10 @@ function LeaveRequest({ leave }: LeaveRequestProps) {
 				<Link
 					href='/request-details'
 					onPress={handlePress}>
-					<View
-						style={{
-							width: 30,
-							height: 30,
-							backgroundColor: '#007AFF',
-							justifyContent: 'center',
-							alignItems: 'center',
-							borderRadius: 50,
-							padding: 5,
-						}}>
-						<AngleIcon color='#fff' />
+					<View style={styles.iconContainer}>
+						<View style={styles.iconWrapper}>
+							<AngleIcon color='#fff' />
+						</View>
 					</View>
 				</Link>
 			</View>
@@ -128,6 +122,18 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		justifyContent: 'center',
+	},
+	iconContainer: {
+		width: 22.5,
+		height: 22.5,
+		backgroundColor: primaryColor,
+		justifyContent: 'center',
+		alignItems: 'center',
+		borderRadius: 50,
+		padding: 5,
+	},
+	iconWrapper: {
+		transform: [{ scale: 0.75 }],
 	},
 	item: {
 		borderRadius: 20,

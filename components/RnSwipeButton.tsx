@@ -12,6 +12,7 @@ import { Toast } from 'toastify-react-native';
 
 import ArrowSimpleIcon from '@/assets/svgs/ArrowSimple';
 import { useAttendance } from '@/app/contexts/AttendanceContext';
+import { primaryColor } from '@/constants/Colors';
 
 function RnSwipeButton() {
 	const colorScheme = useColorScheme();
@@ -86,17 +87,17 @@ function RnSwipeButton() {
 			<SwipeButton
 				disableResetOnTap
 				forceReset={handleForceReset}
-				railBackgroundColor={colorScheme === 'dark' ? '#373737' : '#428EFB'}
-				railBorderColor={colorScheme === 'dark' ? '#373737' : '#428EFB'}
+				railBackgroundColor={colorScheme === 'dark' ? '#373737' : primaryColor}
+				railBorderColor={colorScheme === 'dark' ? '#373737' : primaryColor}
 				railStyles={{
-					backgroundColor: colorScheme === 'dark' ? '#171717' : '#428EFB',
-					borderColor: colorScheme === 'dark' ? '#171717' : '#428EFB',
+					backgroundColor: colorScheme === 'dark' ? '#171717' : primaryColor,
+					borderColor: colorScheme === 'dark' ? '#171717' : primaryColor,
 				}}
 				thumbIconBackgroundColor={
 					colorScheme === 'dark' ? '#171717' : '#FFFFFF'
 				}
-				thumbIconBorderColor={colorScheme === 'dark' ? '#373737' : '#428EFB'}
-				thumbIconComponent={() => <ArrowSimpleIcon color={'#428EFB'} />}
+				thumbIconBorderColor={colorScheme === 'dark' ? '#373737' : primaryColor}
+				thumbIconComponent={() => <ArrowSimpleIcon color={primaryColor} />}
 				titleColor='#fff'
 				onSwipeSuccess={handleSwipeSuccess}
 				titleComponent={titleComponent}

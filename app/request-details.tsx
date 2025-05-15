@@ -11,6 +11,7 @@ import {
 	useColorScheme,
 } from 'react-native';
 import { useLeaves } from './contexts/LeaveContext';
+import { primaryColor } from '@/constants/Colors';
 
 export default function LeaveFormScreen() {
 	const { selectedLeaveRequest } = useLeaves();
@@ -129,7 +130,7 @@ const styles = StyleSheet.create({
 		margin: 20,
 		marginTop: 30,
 		padding: 15,
-		backgroundColor: '#007AFF',
+		backgroundColor: primaryColor,
 		justifyContent: 'center',
 		alignItems: 'center',
 		borderRadius: 10,

@@ -42,7 +42,7 @@ type LeaveContextType = {
 	leaveTypesList: Leave[];
 	selectedLeaveDetails: Leave;
 	leaveRequests: LeaveRequest[];
-	recenteaveRequests: LeaveRequest[];
+	recentLeaveRequests: LeaveRequest[];
 	selectedLeaveRequest: LeaveRequest | null;
 	setSelectedLeave: (leave: Leave) => Promise<void>;
 	setSelectedLeaveRequest: (leave: LeaveRequest) => void;
@@ -71,9 +71,9 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [leaveTypesList, setLeaveTypesList] = useState<Leave[]>([]);
 	const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
-	const [recenteaveRequests, setRecentLeaveRequests] = useState<LeaveRequest[]>(
-		[]
-	);
+	const [recentLeaveRequests, setRecentLeaveRequests] = useState<
+		LeaveRequest[]
+	>([]);
 	const [selectedLeaveDetails, setSelectedLeaveDetails] = useState<Leave>({
 		id: 0,
 	});
@@ -130,8 +130,11 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 				`${API_URL}api/LeaveRequest/GetPendingLeaveRequest`,
 				params
 			);
-			if (response.data.status == 200)
-				setRecentLeaveRequests(response.data.result);
+			if (response?.data?.status == 200) {
+				setRecentLeaveRequests(
+					response?.data?.resultCount ? response.data.result : []
+				);
+			} else setRecentLeaveRequests([]);
 		} catch (error) {
 			throw error;
 		} finally {
@@ -187,7 +190,7 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 				leaveTypesList,
 				selectedLeaveDetails,
 				leaveRequests,
-				recenteaveRequests,
+				recentLeaveRequests,
 				selectedLeaveRequest,
 				checkLeaveAvailability,
 				applyLeave,

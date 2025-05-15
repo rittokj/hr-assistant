@@ -15,6 +15,7 @@ import BottomSheet, {
 import CloseIcon from '@/assets/svgs/Close';
 import { usePayslip } from '@/app/contexts/PayslipContext';
 import PayslipDetailsLoader from './PayslipDetailsLoader';
+import { primaryColor, primaryColorLight } from '@/constants/Colors';
 
 interface PaySlipDetailsProps {
 	open: string;
@@ -165,7 +166,7 @@ function PaySlipDetails({
 								{isDownloading ? (
 									<View style={styles.downloadButtonContent}>
 										<ActivityIndicator
-											color='#007aff'
+											color={primaryColor}
 											size='small'
 										/>
 										<Text
@@ -226,7 +227,7 @@ const styles = StyleSheet.create({
 	downloadButton: {
 		margin: 20,
 		padding: 15,
-		backgroundColor: '#007aff1a',
+		backgroundColor: primaryColorLight,
 		justifyContent: 'center',
 		alignItems: 'center',
 		borderRadius: 10,
@@ -239,7 +240,7 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 	},
 	downloadButtonText: {
-		color: '#007aff',
+		color: primaryColor,
 	},
 	downloadButtonTextMargin: {
 		marginLeft: 8,
