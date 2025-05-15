@@ -1,4 +1,10 @@
-import React, { useEffect, useCallback } from 'react';
+import React, {
+	useEffect,
+	useCallback,
+	useState,
+	useMemo,
+	useRef,
+} from 'react';
 import {
 	View,
 	FlatList,
@@ -6,13 +12,19 @@ import {
 	StyleSheet,
 	useColorScheme,
 	ActivityIndicator,
+	TouchableOpacity,
 } from 'react-native';
 import { WebView } from 'react-native-webview';
+import BottomSheet, {
+	BottomSheetBackdrop,
+	BottomSheetScrollView,
+} from '@gorhom/bottom-sheet';
 
 import { useNotification } from './contexts/NotificationContext';
 import NotificationLoader from '@/components/NotificationLoader';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import CloseIcon from '@/assets/svgs/Close';
 
 interface Notification {
 	id: string;
@@ -48,6 +60,9 @@ const notifications = [
 	},
 ];
 const NotificationsScreen = () => {
+	const [selected, setSelected] = useState(null);
+	const sheetRef = useRef<BottomSheet>(null);
+	const snapPoints = useMemo(() => ['65%'], []);
 	const {
 		isNotificationsLoading,
 		getNotifications,
@@ -56,6 +71,16 @@ const NotificationsScreen = () => {
 		currentPage,
 	} = useNotification();
 	const colorScheme = useColorScheme();
+
+	const handleSnapPress = useCallback((item) => {
+		setSelected(item);
+		sheetRef.current?.snapToIndex(0);
+	}, []);
+
+	const closeModal = useCallback(() => {
+		sheetRef.current?.close();
+		setSelected(null);
+	}, []);
 
 	useEffect(() => {
 		getNotifications(1);
@@ -67,17 +92,21 @@ const NotificationsScreen = () => {
 		}
 	}, [isNotificationsLoading, hasMore, currentPage]);
 
-	const renderItem = ({ item }: { item: Notification }) => (
-		<ThemedView
-			style={[
-				styles.notificationItem,
-				{ backgroundColor: colorScheme === 'dark' ? '#000' : '#eee' },
-			]}>
-			<WebView
-				style={styles.container}
-				source={{ html: item.notificationMessage }}
-			/>
-		</ThemedView>
+	const renderItem = ({ item, index }: { item: Notification }) => (
+		<TouchableOpacity onPress={() => handleSnapPress(item)}>
+			<ThemedView
+				style={[
+					styles.notificationItem,
+					{ backgroundColor: colorScheme === 'dark' ? '#000' : '#eee' },
+				]}>
+				<ThemedText style={styles.message}>{`Notification ${
+					index + 1
+				}`}</ThemedText>
+				<ThemedText style={styles.message}>
+					Click here to open notification
+				</ThemedText>
+			</ThemedView>
+		</TouchableOpacity>
 	);
 
 	const renderEmptyState = () => (
@@ -99,7 +128,20 @@ const NotificationsScreen = () => {
 			</View>
 		);
 	};
-	console.log('isNotificationsLoading', isNotificationsLoading);
+
+	const renderBackdrop = useCallback(
+		(props: any) => (
+			<BottomSheetBackdrop
+				{...props}
+				disappearsOnIndex={-1}
+				appearsOnIndex={0}
+				onPress={null}
+				pressBehavior='none'
+			/>
+		),
+		[]
+	);
+
 	return (
 		<ThemedView style={styles.container}>
 			{currentPage === 1 && isNotificationsLoading ? (
@@ -107,7 +149,7 @@ const NotificationsScreen = () => {
 			) : (
 				<FlatList
 					data={notifications}
-					keyExtractor={(item) => item.id}
+					keyExtractor={(item) => item.notificationLogId}
 					renderItem={renderItem}
 					ListEmptyComponent={renderEmptyState}
 					ListFooterComponent={renderFooter}
@@ -116,6 +158,30 @@ const NotificationsScreen = () => {
 					contentContainerStyle={styles.listContent}
 				/>
 			)}
+			<BottomSheet
+				ref={sheetRef}
+				snapPoints={snapPoints}
+				enableDynamicSizing={false}
+				index={-1}
+				handleComponent={null}
+				backdropComponent={renderBackdrop}>
+				<View style={styles.headerContainer}>
+					<Text style={styles.headerText}>{`Hello`}</Text>
+					<TouchableOpacity
+						onPress={closeModal}
+						style={styles.closeButton}>
+						<CloseIcon color='#fff' />
+					</TouchableOpacity>
+				</View>
+				<BottomSheetScrollView
+					style={{ flex: 1 }}
+					contentContainerStyle={{ flexGrow: 1 }}>
+					<WebView
+						style={styles.titleContainer}
+						source={{ html: selected?.notificationMessage }}
+					/>
+				</BottomSheetScrollView>
+			</BottomSheet>
 		</ThemedView>
 	);
 };
@@ -125,6 +191,18 @@ const styles = StyleSheet.create({
 		flex: 1,
 		padding: 20,
 	},
+	titleContainer: {
+		margin: 20,
+		fontSize: 16,
+	},
+	headerContainer: {
+		padding: 20,
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'center',
+	},
+	headerText: { fontWeight: '600', fontSize: 16 },
+	closeButton: { padding: 10, backgroundColor: '#000', borderRadius: 20 },
 	notificationItem: {
 		padding: 15,
 		marginVertical: 5,

@@ -27,6 +27,7 @@ import DefaultUserImageIcon from '@/assets/svgs/DefaultUserImage';
 import { useLeaves } from '../contexts/LeaveContext';
 import RecentRequestsLoader from '@/components/RecentRequestsLoader';
 import GraphLoader from '@/components/GraphLoader';
+import { API_URL } from '@/constants/constants';
 
 interface ProfileInfo {
 	profileImagePath?: string;
@@ -69,7 +70,9 @@ export default function HomeScreen() {
 				<View style={styles.headerNameSection}>
 					{profileInfo?.profileImagePath ? (
 						<Image
-							source={{ uri: profileInfo.profileImagePath }}
+							source={{
+								uri: `${API_URL}documents/${profileInfo.profileImagePath}`,
+							}}
 							style={styles.reactLogo}
 						/>
 					) : (

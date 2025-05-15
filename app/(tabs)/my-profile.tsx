@@ -7,42 +7,38 @@ import {
 	TouchableOpacity,
 	Platform,
 	useColorScheme,
+	Animated,
 } from 'react-native';
 import moment from 'moment';
+import { useRef, useState } from 'react';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import AngleRightIcon from '@/assets/svgs/AngleRight';
 import { useAuth } from '../contexts/AuthContext';
 import DefaultUserImageIcon from '@/assets/svgs/DefaultUserImage';
-import { useState } from 'react';
 import { API_URL } from '@/constants/constants';
 
 export default function ProfileScreen() {
 	const colorScheme = useColorScheme();
-	const [selected, setSelected] = useState('personalDetails');
+	const [selected, setSelected] = useState('');
+	const [opened, setOpened] = useState([]);
 	const { profileInfo, logout } = useAuth('');
-	console.log('profileInfo', JSON.stringify(profileInfo));
+	const animationValues = useRef({}).current;
+
 	const profileInfoList = [
 		{
 			id: 'personalDetails',
 			label: 'Personal Details',
+			size: 60,
 			list: [
 				{
 					id: 'gender',
 					label: 'Gender',
 					value: profileInfo?.genderCdNavigationDTO?.lookUpName || '',
 				},
-				{
-					id: 'dob',
-					label: 'Date of Birth',
-					value: profileInfo?.dob || '',
-				},
-				{
-					id: 'email',
-					label: 'Email ID',
-					value: profileInfo?.emailId || '',
-				},
+				{ id: 'dob', label: 'Date of Birth', value: profileInfo?.dob || '' },
+				{ id: 'email', label: 'Email ID', value: profileInfo?.emailId || '' },
 				{
 					id: 'phone',
 					label: 'Mobile Number',
@@ -63,6 +59,7 @@ export default function ProfileScreen() {
 		{
 			id: 'professionalDetails',
 			label: 'Professional Details',
+			size: 60,
 			list: [
 				{
 					id: 'qualification',
@@ -99,77 +96,69 @@ export default function ProfileScreen() {
 		{
 			id: 'documents',
 			label: 'Documents',
-			list: profileInfo?.employeeDocumentDTOList.map((i) => {
-				return {
+			size: 80,
+			list:
+				profileInfo?.employeeDocumentDTOList?.map((i) => ({
 					id: i.documentTypeDTO.documentTypeCode,
 					label: i.documentTypeDTO.documentTypeName,
 					value:
 						i.documentTypeDTO.documentTypeCode === 'PPT'
 							? `Issue Date: ${i.issueDateText} \nExpiry Date: ${i.expiryDateText}`
 							: '',
-				};
-			}),
+				})) || [],
 		},
-		// {
-		// 	id: 'leaveInfo',
-		// 	label: 'Leave Info',
-		// 	list: [
-		// 		{
-		// 			id: 'Annual_leave',
-		// 			label: 'Annual leave',
-		// 			value: '',
-		// 		},
-		// 		{
-		// 			id: 'Sick_Leave',
-		// 			label: 'Sick Leave',
-		// 			value: '',
-		// 		},
-		// 		{
-		// 			id: 'Casual_Leave',
-		// 			label: 'Casual Leave',
-		// 			value: '',
-		// 		},
-		// 		{
-		// 			id: 'Unpaid_Leave',
-		// 			label: 'Unpaid Leave',
-		// 			value: '',
-		// 		},
-		// 	],
-		// },
 		{
 			id: 'salaryInfo',
 			label: 'Salary Info',
-			list: profileInfo?.employeeSalaryDTOList?.map((i) => {
-				return {
+			size: 80,
+			list:
+				profileInfo?.employeeSalaryDTOList?.map((i) => ({
 					id: 'Total_Salary',
 					label: 'Salary',
 					value: `Total: ${i.totalSalary}\nDate From: ${i.dateFromText}\nVersion: ${i.version}`,
-				};
-			}),
+				})) || [],
 		},
 		{
 			id: 'Warning',
 			label: 'Warning',
+			size: 80,
 			list: [
 				{
 					id: 'Warning_Message',
 					label: 'Warning Message',
-					value: 'First Warning	',
+					value: 'First Warning',
 				},
 			],
 		},
 		{
 			id: 'Memo',
+			size: 80,
 			label: 'Memo',
-			list: [
-				{
-					id: 'Memo-Code',
-					label: 'Memo Code',
-					value: 'M20',
-				},
-			],
+			list: [{ id: 'Memo-Code', label: 'Memo Code', value: 'M20' }],
 		},
 	];
+
+	const toggleSection = (id) => {
+		const list = [...opened];
+		const currentIndex = list.findIndex((i) => i === id);
+		if (currentIndex !== -1) {
+			list.splice(currentIndex, 1);
+		} else {
+			list.push(id);
+		}
+		const isOpen = currentIndex !== -1;
+		setSelected(isOpen ? '' : id);
+		if (!animationValues[id]) {
+			animationValues[id] = new Animated.Value(isOpen ? 0 : 1);
+		}
+		Animated.timing(animationValues[id], {
+			toValue: isOpen ? 0 : 1,
+			duration: 300,
+			useNativeDriver: false,
+		}).start();
+		setOpened(list);
+	};
+
 	return (
 		<SafeAreaView style={styles.container}>
 			<ThemedView style={styles.requestsContainer}>
@@ -189,9 +178,7 @@ export default function ProfileScreen() {
 					<View
 						style={[
 							styles.imageWrapper,
-							{
-								borderColor: colorScheme === 'dark' ? '#373737' : '#ECE9F2',
-							},
+							{ borderColor: colorScheme === 'dark' ? '#373737' : '#ECE9F2' },
 						]}>
 						{profileInfo?.profileImagePath ? (
 							<Image
@@ -221,77 +208,93 @@ export default function ProfileScreen() {
 						</View>
 					</View>
 					<View style={styles.linksWrapper}>
-						{profileInfoList.map((item) => (
-							<View key={item.id}>
-								<TouchableOpacity
-									key={item.id}
-									onPress={() =>
-										setSelected((val) => (val === item.id ? '' : item.id))
-									}
-									style={[
-										styles.linksItem,
-										{
-											backgroundColor:
-												colorScheme === 'dark' ? '#373737' : '#ECE9F2',
-										},
-									]}>
-									<ThemedText
-										lightColor='#171717'
-										darkColor='#ccc'>
-										{item.label}
-									</ThemedText>
-									<View
-										style={{
-											transform: [
-												{ rotate: selected === item.id ? '90deg' : '0deg' },
-											],
-										}}>
-										<AngleRightIcon
-											color={colorScheme === 'dark' ? '#ccc' : '#171717'}
-										/>
-									</View>
-								</TouchableOpacity>
-								{selected === item.id ? (
-									<View
+						{profileInfoList.map((item) => {
+							if (!animationValues[item.id]) {
+								animationValues[item.id] = new Animated.Value(0);
+							}
+							const animatedHeight = animationValues[item.id].interpolate({
+								inputRange: [0, 1],
+								outputRange: [0, item.list.length * item.size],
+							});
+							const animatedOpacity = animationValues[item.id].interpolate({
+								inputRange: [0, 1],
+								outputRange: [0, 1],
+							});
+
+							return (
+								<View key={item.id}>
+									<TouchableOpacity
+										onPress={() => toggleSection(item.id)}
 										style={[
-											styles.detailsWrapper,
+											styles.linksItem,
 											{
-												borderColor:
+												backgroundColor:
 													colorScheme === 'dark' ? '#373737' : '#ECE9F2',
 											},
 										]}>
-										{item?.list?.map((menuItem, index) => (
-											<View
-												key={menuItem.id}
-												style={[
-													styles.detailsItem,
+										<ThemedText
+											lightColor='#171717'
+											darkColor='#ccc'>
+											{item.label}
+										</ThemedText>
+										<View
+											style={{
+												transform: [
 													{
-														borderBottomWidth:
-															item?.list?.length - 1 === index ? 0 : 1,
-														borderBottomColor:
-															colorScheme === 'dark' ? '#373737' : '#ECE9F2',
+														rotate:
+															opened.findIndex((i) => i === item.id) > -1
+																? '90deg'
+																: '0deg',
 													},
-												]}>
-												<ThemedText>{menuItem.label}</ThemedText>
-												<ThemedText>
-													{menuItem?.type === 'date'
-														? moment(menuItem.value).format('DD MMM YYYY')
-														: menuItem.value}
-												</ThemedText>
-											</View>
-										))}
-									</View>
-								) : null}
-							</View>
-						))}
+												],
+											}}>
+											<AngleRightIcon
+												color={colorScheme === 'dark' ? '#ccc' : '#171717'}
+											/>
+										</View>
+									</TouchableOpacity>
+									<Animated.View
+										style={{
+											height: animatedHeight,
+											opacity: animatedOpacity,
+											overflow: 'hidden',
+										}}>
+										<View
+											style={[
+												styles.detailsWrapper,
+												{
+													borderColor:
+														colorScheme === 'dark' ? '#373737' : '#ECE9F2',
+												},
+											]}>
+											{item?.list?.map((menuItem, index) => (
+												<View
+													key={menuItem.id}
+													style={[
+														styles.detailsItem,
+														{
+															borderBottomWidth:
+																item?.list?.length - 1 === index ? 0 : 1,
+															borderBottomColor:
+																colorScheme === 'dark' ? '#373737' : '#ECE9F2',
+														},
+													]}>
+													<ThemedText>{menuItem.label}</ThemedText>
+													<ThemedText>
+														{menuItem?.type === 'date'
+															? moment(menuItem.value).format('DD MMM YYYY')
+															: menuItem.value}
+													</ThemedText>
+												</View>
+											))}
+										</View>
+									</Animated.View>
+								</View>
+							);
+						})}
 						<TouchableOpacity
 							onPress={logout}
-							style={[
-								styles.linksItem,
-								{
-									backgroundColor: '#FF3B30',
-								},
-							]}>
+							style={[styles.linksItem, { backgroundColor: '#FF3B30' }]}>
 							<ThemedText style={{ color: '#fff' }}>Logout</ThemedText>
 						</TouchableOpacity>
 					</View>
@@ -357,7 +360,6 @@ const styles = StyleSheet.create({
 		justifyContent: 'space-between',
 		alignItems: 'center',
 		flexDirection: 'row',
-
 		paddingHorizontal: 20,
 		paddingVertical: 15,
 		marginBottom: 15,
