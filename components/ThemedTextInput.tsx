@@ -21,9 +21,14 @@ export function ThemedTextInput({
 		{ light: lightColor, dark: darkColor },
 		'background'
 	);
+	const tintColor = useThemeColor(
+		{ light: lightColor, dark: darkColor },
+		'placeholder'
+	);
 
 	return (
 		<TextInput
+			placeholderTextColor={tintColor}
 			style={[{ color, backgroundColor }, styles.default, style]}
 			multiline={multiline}
 			{...rest}

@@ -132,6 +132,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 				'refreshToken',
 				'employeeId',
 			]);
+			setProfileInfo(null);
 			setTokens({ accessToken: null, refreshToken: null, employeeId: null });
 		} catch (error) {
 			throw error;

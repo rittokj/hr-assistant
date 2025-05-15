@@ -13,6 +13,7 @@ import BottomSheet, {
 
 import CloseIcon from '@/assets/svgs/Close';
 import { ThemedView } from './ThemedView';
+import { primaryColor } from '@/constants/Colors';
 
 interface BottomSheetSelecterProps {
 	open: boolean;
@@ -104,7 +105,7 @@ function BottomSheetSelecter({
 								backgroundColor:
 									selectedItem?.metaData &&
 									item[valueId] === selectedItem?.metaData[valueId]
-										? '#007AFF'
+										? primaryColor
 										: '#e6f2ff',
 								justifyContent: 'center',
 								alignItems: 'center',

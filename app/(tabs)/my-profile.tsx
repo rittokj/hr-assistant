@@ -18,6 +18,7 @@ import AngleRightIcon from '@/assets/svgs/AngleRight';
 import { useAuth } from '../contexts/AuthContext';
 import DefaultUserImageIcon from '@/assets/svgs/DefaultUserImage';
 import { API_URL } from '@/constants/constants';
+import { primaryColor } from '@/constants/Colors';
 
 export default function ProfileScreen() {
 	const colorScheme = useColorScheme();
@@ -348,7 +349,7 @@ const styles = StyleSheet.create({
 	},
 	nameWrapper: {
 		position: 'absolute',
-		backgroundColor: '#007AFF',
+		backgroundColor: primaryColor,
 		bottom: 0,
 		left: 0,
 		right: 0,

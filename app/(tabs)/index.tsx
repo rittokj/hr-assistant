@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
 	Image,
 	StyleSheet,
@@ -8,6 +8,7 @@ import {
 	SafeAreaView,
 	Dimensions,
 	useColorScheme,
+	RefreshControl,
 } from 'react-native';
 import moment from 'moment';
 import { Link } from 'expo-router';
@@ -28,6 +29,7 @@ import { useLeaves } from '../contexts/LeaveContext';
 import RecentRequestsLoader from '@/components/RecentRequestsLoader';
 import GraphLoader from '@/components/GraphLoader';
 import { API_URL } from '@/constants/constants';
+import { primaryColor } from '@/constants/Colors';
 
 interface ProfileInfo {
 	profileImagePath?: string;
@@ -44,6 +46,7 @@ export default function HomeScreen() {
 	const textColor = useThemeColor({}, 'text');
 	const backgroundColor = useThemeColor({}, 'background');
 	const { profileInfo } = useAuth() as { profileInfo: ProfileInfo };
+	const [refreshing, setRefreshing] = useState(false);
 	const {
 		currentDayAttendance,
 		weeklyAttendance,
@@ -52,7 +55,19 @@ export default function HomeScreen() {
 		isCurrentDayLoading,
 		isCurrentWeekLoading,
 	} = useAttendance();
-	const { recenteaveRequests, isRecenteaveRequestsLoading } = useLeaves();
+	const { recentLeaveRequests, isRecenteaveRequestsLoading } = useLeaves();
+
+	const onRefresh = React.useCallback(async () => {
+		setRefreshing(true);
+		try {
+			await Promise.all([
+				fetchCurrentDayAttendance(),
+				fetchCurrentWeekAttendance(),
+			]);
+		} finally {
+			setRefreshing(false);
+		}
+	}, []);
 
 	useEffect(() => {
 		fetchCurrentDayAttendance();
@@ -60,7 +75,7 @@ export default function HomeScreen() {
 	}, [profileInfo?.employeeID]);
 
 	const chartData = weeklyAttendance?.attendanceMonthDetail?.map((att) => ({
-		value: att.totalHours ? parseFloat(att.totalHours) : 0,
+		value: att.totalHour ? parseFloat(att.totalHour) : 0,
 		label: moment(att.attDate).format('ddd'),
 	}));
 
@@ -91,17 +106,26 @@ export default function HomeScreen() {
 					</View>
 				</View>
 				<Link href='/notifications'>
-					<BellIcon color='#007AFF' />
+					<BellIcon color={primaryColor} />
 				</Link>
 			</ThemedView>
-			<ScrollView showsVerticalScrollIndicator={false}>
+			<ScrollView
+				showsVerticalScrollIndicator={false}
+				refreshControl={
+					<RefreshControl
+						refreshing={refreshing}
+						onRefresh={onRefresh}
+						tintColor={primaryColor}
+						colors={[primaryColor]}
+					/>
+				}>
 				<ThemedView style={styles.titleContainer}>
 					<View style={styles.titleGraphSection}>
 						<ThemedText type='defaultSemiBold'>Attendance</ThemedText>
 						<Link href='/attendance'>
 							<ThemedText
-								lightColor='#007AFF'
-								darkColor='#007AFF'>
+								lightColor={primaryColor}
+								darkColor={primaryColor}>
 								View All
 							</ThemedText>
 						</Link>
@@ -112,7 +136,7 @@ export default function HomeScreen() {
 						<View style={styles.bodyGraphSection}>
 							<BarChart
 								data={chartData}
-								frontColor='#3185FE'
+								frontColor={primaryColor}
 								xAxisLabelTextStyle={{
 									color: textColor,
 								}}
@@ -145,7 +169,7 @@ export default function HomeScreen() {
 											colorScheme === 'dark' ? '#272727' : '#E6F2FF',
 									},
 								]}>
-								<ArrowRightIcon color='#007AFF' />
+								<ArrowRightIcon color={primaryColor} />
 							</View>
 							<ThemedText>Check in</ThemedText>
 						</View>
@@ -181,7 +205,7 @@ export default function HomeScreen() {
 											colorScheme === 'dark' ? '#272727' : '#E6F2FF',
 									},
 								]}>
-								<ArrowLeftIcon color='#007AFF' />
+								<ArrowLeftIcon color={primaryColor} />
 							</View>
 							<ThemedText>Check out</ThemedText>
 						</View>
@@ -213,16 +237,16 @@ export default function HomeScreen() {
 						<RnSwipeButton />
 					</View>
 				</ThemedView>
-				{!isRecenteaveRequestsLoading ? (
+				{isRecenteaveRequestsLoading ? (
 					<RecentRequestsLoader />
-				) : recenteaveRequests?.length ? (
+				) : recentLeaveRequests?.length ? (
 					<ThemedView style={styles.requestsContainer}>
 						<View style={styles.requestsTitleSection}>
 							<ThemedText type='defaultSemiBold'>My Requests</ThemedText>
 							<Link href='/leaves'>
 								<ThemedText
-									lightColor='#007AFF'
-									darkColor='#007AFF'>
+									lightColor={primaryColor}
+									darkColor={primaryColor}>
 									View All
 								</ThemedText>
 							</Link>

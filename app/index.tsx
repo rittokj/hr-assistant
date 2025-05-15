@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { Text, TouchableOpacity, StyleSheet, Image, View } from 'react-native';
 import { AxiosError } from 'axios';
 import { useNavigation } from 'expo-router';
 import { Toast } from 'toastify-react-native';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedTextInput } from '@/components/ThemedTextInput';
-import { ThemedView } from '@/components/ThemedView';
 import { useAuth } from './contexts/AuthContext';
+import { primaryColor } from '@/constants/Colors';
 
 const LoginScreen = () => {
 	const navigation = useNavigation();
@@ -54,23 +54,18 @@ const LoginScreen = () => {
 		}
 	};
 
-	const handleForgotPassword = () => {
-		Toast.show({
-			type: 'info',
-			text1: 'Forgot password functionality coming soon!',
-			position: 'bottom',
-			visibilityTime: 3000,
-		});
-	};
-
 	return (
-		<ThemedView style={styles.container}>
+		<View style={styles.container}>
 			<Image
-				source={require('@/assets/images/react-logo.png')}
+				source={require('@/assets/images/logo.png')}
 				style={styles.logo}
 			/>
-			<ThemedText style={styles.title}>Welcome to HR App</ThemedText>
-
+			<View style={styles.textContainer}>
+				<ThemedText style={styles.title}>Sign in to your Account</ThemedText>
+				<ThemedText style={styles.subTitle}>
+					Enter your username and password to log in
+				</ThemedText>
+			</View>
 			<ThemedTextInput
 				style={styles.input}
 				placeholder='Username'
@@ -96,30 +91,34 @@ const LoginScreen = () => {
 					{isLoading ? 'Logging in...' : 'Login'}
 				</Text>
 			</TouchableOpacity>
-
-			<TouchableOpacity onPress={handleForgotPassword}>
-				<Text style={styles.forgotPassword}>Forgot Password?</Text>
-			</TouchableOpacity>
-		</ThemedView>
+		</View>
 	);
 };
 
 const styles = StyleSheet.create({
 	container: {
+		backgroundColor: '#D1C9BE',
 		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center',
 		padding: 20,
 	},
 	logo: {
-		width: 100,
-		height: 100,
+		width: 120,
+		height: 120,
+		objectFit: 'contain',
 		marginBottom: 20,
 	},
+	textContainer: { width: '100%', marginBottom: 40 },
 	title: {
-		fontSize: 22,
+		fontSize: 32,
+		lineHeight: 46,
+		maxWidth: '70%',
 		fontWeight: 'bold',
-		marginBottom: 20,
+		marginBottom: 10,
+	},
+	subTitle: {
+		fontSize: 16,
 	},
 	input: {
 		width: '100%',
@@ -127,13 +126,13 @@ const styles = StyleSheet.create({
 		marginVertical: 10,
 		borderWidth: 1,
 		borderColor: '#ccc',
-		borderRadius: 5,
+		borderRadius: 10,
 	},
 	button: {
 		width: '100%',
 		padding: 15,
-		backgroundColor: '#007bff',
-		borderRadius: 5,
+		backgroundColor: primaryColor,
+		borderRadius: 10,
 		alignItems: 'center',
 		marginTop: 10,
 	},
@@ -144,7 +143,7 @@ const styles = StyleSheet.create({
 	},
 	forgotPassword: {
 		marginTop: 10,
-		color: '#007bff',
+		color: primaryColor,
 	},
 	buttonDisabled: {
 		opacity: 0.7,

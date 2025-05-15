@@ -22,6 +22,7 @@ import { ThemedTextInput } from '@/components/ThemedTextInput';
 import { useLeaves } from './contexts/LeaveContext';
 import { useAuth } from './contexts/AuthContext';
 import { useNavigation } from 'expo-router';
+import { primaryColor } from '@/constants/Colors';
 
 interface FormItem {
 	id: string;
@@ -111,7 +112,7 @@ export default function LeaveFormScreen() {
 				return (
 					<View>
 						<Switch
-							trackColor={{ false: '#DADADA', true: '#007AFF' }}
+							trackColor={{ false: '#DADADA', true: primaryColor }}
 							thumbColor='#FFFFFF'
 							ios_backgroundColor='#DADADA'
 							onValueChange={() => {
@@ -196,7 +197,7 @@ export default function LeaveFormScreen() {
 										fontSize: 14,
 										textAlign: 'right',
 										marginRight: 5,
-										color: '#007AFF',
+										color: primaryColor,
 									}}>
 									{moment(item.value || new Date()).format('DD MMM YYYY')}
 								</ThemedText>
@@ -413,7 +414,7 @@ const styles = StyleSheet.create({
 		margin: 20,
 		marginTop: 30,
 		padding: 15,
-		backgroundColor: '#007AFF',
+		backgroundColor: primaryColor,
 		justifyContent: 'center',
 		alignItems: 'center',
 		borderRadius: 10,
