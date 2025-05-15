@@ -8,9 +8,10 @@ import {
 	Platform,
 	useColorScheme,
 	Animated,
+	RefreshControl,
 } from 'react-native';
 import moment from 'moment';
-import { useRef, useState } from 'react';
+import { useRef, useState, useCallback } from 'react';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -20,14 +21,42 @@ import DefaultUserImageIcon from '@/assets/svgs/DefaultUserImage';
 import { API_URL } from '@/constants/constants';
 import { primaryColor } from '@/constants/Colors';
 
+type MenuItem = {
+	id: string;
+	label: string;
+	value: string;
+	type?: 'date';
+};
+
+type ProfileSection = {
+	id: string;
+	label: string;
+	size: number;
+	list: MenuItem[];
+};
+
 export default function ProfileScreen() {
 	const colorScheme = useColorScheme();
 	const [selected, setSelected] = useState('');
-	const [opened, setOpened] = useState([]);
-	const { profileInfo, logout } = useAuth('');
-	const animationValues = useRef({}).current;
+	const [opened, setOpened] = useState<string[]>([]);
+	const [refreshing, setRefreshing] = useState(false);
+	const { profileInfo, logout, tokens, getProfileInfo } = useAuth();
+	const animationValues = useRef<Record<string, Animated.Value>>({}).current;
 
-	const profileInfoList = [
+	const onRefresh = useCallback(async () => {
+		setRefreshing(true);
+		try {
+			if (tokens.employeeId) {
+				await getProfileInfo(tokens.employeeId, null, null);
+			}
+		} catch (error) {
+			console.error('Error refreshing profile:', error);
+		} finally {
+			setRefreshing(false);
+		}
+	}, [tokens.employeeId, getProfileInfo]);
+
+	const profileInfoList: ProfileSection[] = [
 		{
 			id: 'personalDetails',
 			label: 'Personal Details',
@@ -139,7 +168,7 @@ export default function ProfileScreen() {
 		},
 	];
 
-	const toggleSection = (id) => {
+	const toggleSection = (id: string) => {
 		const list = [...opened];
 		const currentIndex = list.findIndex((i) => i === id);
 		if (currentIndex !== -1) {
@@ -171,6 +200,14 @@ export default function ProfileScreen() {
 					</ThemedText>
 				</View>
 				<ScrollView
+					refreshControl={
+						<RefreshControl
+							refreshing={refreshing}
+							onRefresh={onRefresh}
+							tintColor={primaryColor}
+							colors={[primaryColor]}
+						/>
+					}
 					contentContainerStyle={{
 						padding: 20,
 						paddingTop: 10,
@@ -190,7 +227,9 @@ export default function ProfileScreen() {
 							/>
 						) : (
 							<View style={styles.profileImage}>
-								<DefaultUserImageIcon />
+								<DefaultUserImageIcon
+									color={colorScheme === 'dark' ? '#373737' : '#171717'}
+								/>
 							</View>
 						)}
 						<View style={styles.nameWrapper}>

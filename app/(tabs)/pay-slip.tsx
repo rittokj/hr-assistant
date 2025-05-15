@@ -4,6 +4,7 @@ import {
 	FlatList,
 	KeyboardAvoidingView,
 	useColorScheme,
+	RefreshControl,
 } from 'react-native';
 
 import { ThemedText } from '@/components/ThemedText';
@@ -13,12 +14,20 @@ import PaySlipDetails from '@/components/PaySlipDetails';
 import PaySlipLoader from '@/components/PaySlipLoader';
 import { useEffect, useState } from 'react';
 import { usePayslip } from '../contexts/PayslipContext';
+import { primaryColor } from '@/constants/Colors';
 
 export default function PaySlipScreen() {
 	const colorScheme = useColorScheme();
 	const { payslips, fetchPayslips } = usePayslip();
 	const [open, setOpen] = useState('');
 	const [loading, setLoading] = useState(true);
+	const [refreshing, setRefreshing] = useState(false);
+
+	const onRefresh = async () => {
+		setRefreshing(true);
+		await fetchPayslips();
+		setRefreshing(false);
+	};
 
 	useEffect(() => {
 		const loadData = async () => {
@@ -56,6 +65,14 @@ export default function PaySlipScreen() {
 						}}
 						showsVerticalScrollIndicator={false}
 						ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+						refreshControl={
+							<RefreshControl
+								refreshing={refreshing}
+								onRefresh={onRefresh}
+								tintColor={primaryColor}
+								colors={[primaryColor]}
+							/>
+						}
 						renderItem={({ item }) => (
 							<PaySlip
 								slip={item}

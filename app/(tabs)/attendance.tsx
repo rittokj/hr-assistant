@@ -6,6 +6,7 @@ import {
 	TouchableOpacity,
 	KeyboardAvoidingView,
 	useColorScheme,
+	RefreshControl,
 } from 'react-native';
 
 import { ThemedText } from '@/components/ThemedText';
@@ -16,9 +17,11 @@ import { useEffect, useState } from 'react';
 import DailyAttendence from '@/components/DailyAttendence';
 import { useAttendance } from '../contexts/AttendanceContext';
 import DailyAttendenceLoader from '@/components/DailyAttendenceLoader';
+import { primaryColor } from '@/constants/Colors';
 
 export default function AttendanceScreen() {
 	const [open, setOpen] = useState(false);
+	const [refreshing, setRefreshing] = useState(false);
 	const colorScheme = useColorScheme();
 	const {
 		months: contextMonths,
@@ -88,6 +91,12 @@ export default function AttendanceScreen() {
 		);
 	};
 
+	const onRefresh = async () => {
+		setRefreshing(true);
+		await fetchAttendanceData();
+		setRefreshing(false);
+	};
+
 	useEffect(() => {
 		fetchAttendanceData();
 	}, [selectedMonth]);
@@ -137,6 +146,14 @@ export default function AttendanceScreen() {
 						paddingBottom: 250,
 					}}
 					showsVerticalScrollIndicator={false}
+					refreshControl={
+						<RefreshControl
+							refreshing={refreshing}
+							onRefresh={onRefresh}
+							tintColor={primaryColor}
+							colors={[primaryColor]}
+						/>
+					}
 					renderItem={({ item }) => <DailyAttendence attendance={item} />}
 					ListEmptyComponent={
 						isLoading ? (

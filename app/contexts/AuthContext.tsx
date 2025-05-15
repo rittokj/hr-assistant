@@ -10,13 +10,57 @@ type AuthTokens = {
 	employeeId: string | null;
 };
 
+type ProfileInfo = {
+	employeeID: string;
+	employeeName?: string;
+	profileImagePath?: string;
+	designationDTO?: {
+		designationName?: string;
+	};
+	genderCdNavigationDTO?: {
+		lookUpName?: string;
+	};
+	dob?: string;
+	emailId?: string;
+	mobileNo?: string;
+	joinDateText?: string;
+	qualificationCdNavigationDTO?: {
+		lookUpName?: string;
+	};
+	offerSignedDateText?: string;
+	departmentDTO?: {
+		departmentName?: string;
+	};
+	reportingTO?: string;
+	sponsorName?: string;
+	holiday?: string;
+	employeeDocumentDTOList?: Array<{
+		documentTypeDTO: {
+			documentTypeCode: string;
+			documentTypeName: string;
+		};
+		issueDateText?: string;
+		expiryDateText?: string;
+	}>;
+	employeeSalaryDTOList?: Array<{
+		totalSalary: string;
+		dateFromText: string;
+		version: string;
+	}>;
+};
+
 type AuthContextType = {
 	tokens: AuthTokens;
 	isLoading: boolean;
 	isAuthenticated: boolean;
-	profileInfo: object | null;
+	profileInfo: ProfileInfo | null;
 	login: (username: string, password: string) => Promise<void>;
 	logout: () => Promise<void>;
+	getProfileInfo: (
+		userId: string,
+		callback1: any,
+		callback2: any
+	) => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextType | null>(null);
@@ -36,7 +80,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		employeeId: null,
 	});
 	const [isLoading, setIsLoading] = useState(true);
-	const [profileInfo, setProfileInfo] = useState(null);
+	const [profileInfo, setProfileInfo] = useState<ProfileInfo | null>(null);
 
 	useEffect(() => {
 		loadTokens();
@@ -66,7 +110,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		}
 	};
 
-	const login = async (userName: string, password: string) => {
+	const login = async (userName: string, password: string): Promise<void> => {
 		try {
 			return new Promise((resolve, reject) => {
 				axiosInstance
@@ -90,7 +134,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 							});
 							getProfileInfo(
 								user.employeeId,
-								() => resolve(user.employeeId),
+								() => resolve(),
 								() => reject()
 							);
 						}
@@ -148,6 +192,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 				isAuthenticated: Boolean(profileInfo?.employeeID),
 				login,
 				logout,
+				getProfileInfo,
 			}}>
 			{children}
 		</AuthContext.Provider>
