@@ -93,8 +93,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 								() => resolve(user.employeeId),
 								() => reject()
 							);
-						}
-						reject('No response');
+						} else reject('No response');
 					})
 					.catch((err) => {
 						reject(err);
