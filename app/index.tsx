@@ -12,8 +12,8 @@ import { primaryColor } from '@/constants/Colors';
 const LoginScreen = () => {
 	const navigation = useNavigation();
 	const { login, isLoading, isAuthenticated } = useAuth();
-	const [username, setUsername] = useState('employee1');
-	const [password, setPassword] = useState('123');
+	const [username, setUsername] = useState('hruser');
+	const [password, setPassword] = useState('hr123');
 
 	useEffect(() => {
 		if (isAuthenticated) {
