@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
 	},
 	title: {
 		width: '100%',
-		height: 250,
+		height: 285,
 		backgroundColor: '#E6F2FF',
 		borderRadius: 16,
 	},
