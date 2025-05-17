@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import 'react-native-reanimated';
 import { TouchableOpacity, View } from 'react-native';
 import {
@@ -7,7 +7,7 @@ import {
 	ThemeProvider,
 } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, Redirect } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -17,7 +17,7 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 
 import AngleIcon from '@/assets/svgs/Angle';
 import { ThemedText } from '@/components/ThemedText';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LeaveProvider } from './contexts/LeaveContext';
 import { AttendanceProvider } from './contexts/AttendanceContext';
 import { toastConfig } from './utils/toastConfig';
@@ -27,6 +27,23 @@ import { ProfileProvider } from './contexts/ProfileContext';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+const RootLayoutNav = memo(() => {
+	const { isAuthenticated, initialLoading } = useAuth();
+
+	// Show splash screen while loading
+	if (initialLoading) {
+		return <Redirect href='/' />;
+	}
+
+	// If authenticated, redirect to tabs
+	if (isAuthenticated) {
+		return <Redirect href='/(tabs)' />;
+	}
+
+	// If not authenticated, redirect to login
+	return <Redirect href='/login' />;
+}, []);
 
 function StackLayout() {
 	const colorScheme = useColorScheme();
@@ -60,55 +77,20 @@ function StackLayout() {
 				options={{ headerShown: false }}
 			/>
 			<Stack.Screen
+				name='login'
+				options={{ headerShown: false }}
+			/>
+			<Stack.Screen
 				name='(tabs)'
 				options={{ headerShown: false }}
 			/>
 			<Stack.Screen
 				name='notifications'
-				options={{
-					title: 'Apply Leave',
-					header: (props) => {
-						return (
-							<View
-								style={{
-									marginTop: 70,
-									marginLeft: 20,
-									flexDirection: 'row',
-									alignItems: 'center',
-									paddingBottom: 20,
-								}}>
-								<TouchableOpacity onPress={() => props.navigation.goBack()}>
-									<View
-										style={{
-											width: 35,
-											height: 35,
-											backgroundColor:
-												colorScheme === 'dark' ? '#171717' : '#000',
-											justifyContent: 'center',
-											alignItems: 'center',
-											borderRadius: 50,
-											marginRight: 10,
-											transform: [{ rotate: '180deg' }],
-										}}>
-										<AngleIcon color='#fff' />
-									</View>
-								</TouchableOpacity>
-								<ThemedText
-									style={{
-										fontSize: 20,
-										fontWeight: 'bold',
-									}}>
-									Notifications
-								</ThemedText>
-							</View>
-						);
-					},
-				}}
+				options={{ headerShown: false }}
 			/>
 			<Stack.Screen
 				name='leave-form'
 				options={{
-					title: 'Apply Leave',
 					header: (props) => {
 						return (
 							<View
@@ -150,7 +132,6 @@ function StackLayout() {
 			<Stack.Screen
 				name='request-details'
 				options={{
-					title: 'Apply Leave',
 					header: (props) => {
 						return (
 							<View
@@ -218,6 +199,7 @@ export default function RootLayout() {
 							<AttendanceProvider>
 								<PayslipProvider>
 									<ProfileProvider>
+										<RootLayoutNav />
 										<StackLayout />
 										<ToastManager config={toastConfig} />
 										<StatusBar style='auto' />

@@ -3,10 +3,8 @@ import React from 'react';
 import { Platform } from 'react-native';
 
 import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/ui/IconSymbol';
 import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors, primaryColor } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { primaryColor } from '@/constants/Colors';
 
 import HomeIcon from '@/assets/svgs/Home';
 import LeavesIcon from '@/assets/svgs/Leaves';
@@ -15,8 +13,6 @@ import PaySlipIcon from '@/assets/svgs/PaySlip';
 import ProfileIcon from '@/assets/svgs/Profile';
 
 export default function HomeLayout() {
-	const colorScheme = useColorScheme();
-
 	return (
 		<Tabs
 			screenOptions={{
@@ -28,8 +24,15 @@ export default function HomeLayout() {
 					ios: {
 						// Use a transparent background on iOS to show the blur effect
 						position: 'absolute',
+						paddingTop: 8,
+						paddingBottom: 8,
+						height: 65,
 					},
-					default: {},
+					default: {
+						paddingTop: 8,
+						paddingBottom: 8,
+						height: 65,
+					},
 				}),
 			}}>
 			<Tabs.Screen

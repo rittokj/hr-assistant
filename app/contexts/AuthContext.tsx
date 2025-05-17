@@ -52,6 +52,7 @@ type ProfileInfo = {
 type AuthContextType = {
 	tokens: AuthTokens;
 	isLoading: boolean;
+	initialLoading: boolean;
 	isAuthenticated: boolean;
 	profileInfo: ProfileInfo | null;
 	login: (username: string, password: string) => Promise<void>;
@@ -79,12 +80,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		refreshToken: null,
 		employeeId: null,
 	});
-	const [isLoading, setIsLoading] = useState(true);
+	const [isLoading, setIsLoading] = useState(false);
+	const [initialLoading, setInitialLoading] = useState(true);
 	const [profileInfo, setProfileInfo] = useState<ProfileInfo | null>(null);
 
 	useEffect(() => {
 		loadTokens();
 	}, []);
+	const setLoad = (val: any) => {
+		setInitialLoading(val);
+	};
 
 	const loadTokens = async () => {
 		try {
@@ -102,15 +107,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 					refreshToken,
 					employeeId,
 				});
-				getProfileInfo(employeeId, null, null);
+				getProfileInfo(
+					employeeId,
+					() => {
+						setLoad(false);
+					},
+					() => {
+						setLoad(false);
+					}
+				);
+			} else {
+				setLoad(false);
 			}
 		} catch (error) {
-		} finally {
-			setIsLoading(false);
+			setLoad(false);
 		}
 	};
 
 	const login = async (userName: string, password: string): Promise<void> => {
+		setIsLoading(true);
 		try {
 			return new Promise((resolve, reject) => {
 				axiosInstance
@@ -119,10 +134,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 						password,
 						refreshToken: '',
 					})
-					.then((response) => {
+					.then(async (response) => {
 						if (response?.data?.result?.user?.employeeId) {
 							const { tokenModel, user } = response?.data?.result;
-							Promise.all([
+							await Promise.all([
 								AsyncStorage.setItem('accessToken', tokenModel.token),
 								AsyncStorage.setItem('refreshToken', tokenModel.refreshToken),
 								AsyncStorage.setItem('employeeId', `${user.employeeId}`),
@@ -141,6 +156,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 					})
 					.catch((err) => {
 						reject(err);
+					})
+					.finally(() => {
+						setIsLoading(false);
 					});
 			});
 		} catch (error) {
@@ -164,6 +182,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 				if (callback2) callback2();
 			}
 		} catch (error) {
+			if (callback2) callback2();
 			throw error;
 		}
 	};
@@ -188,6 +207,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 				tokens,
 				profileInfo,
 				isLoading,
+				initialLoading,
 				isAuthenticated: Boolean(profileInfo?.employeeID),
 				login,
 				logout,
