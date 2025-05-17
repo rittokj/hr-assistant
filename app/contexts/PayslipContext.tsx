@@ -1,11 +1,12 @@
 import React, { createContext, useContext, useState } from 'react';
-import { useAuth } from './AuthContext';
-import { axiosInstance } from '../utils/axios';
-import { API_URL } from '@/constants/constants';
 import * as FileSystem from 'expo-file-system';
 import { Platform } from 'react-native';
 import { shareAsync } from 'expo-sharing';
-import moment = require('moment');
+import moment from 'moment';
+
+import { useAuth } from './AuthContext';
+import { axiosInstance } from '../utils/axios';
+import { API_URL } from '@/constants/constants';
 
 type SalaryTypeDTO = {
 	salaryTypeCode: string;

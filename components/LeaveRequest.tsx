@@ -34,87 +34,97 @@ function LeaveRequest({ leave }: LeaveRequestProps) {
 	};
 
 	return (
-		<ThemedView
-			style={[
-				styles.item,
-				{
-					borderColor: '#F3EBFF',
-					borderWidth: 1,
-					padding: 20,
-				},
-			]}>
-			<View
-				style={{
-					flexDirection: 'row',
-					alignItems: 'center',
-				}}>
+		<Link
+			href='/request-details'
+			onPress={handlePress}>
+			<ThemedView
+				style={[
+					styles.item,
+					{
+						borderColor: '#F3EBFF',
+						borderWidth: 1,
+						paddingVertical: 7.5,
+						paddingHorizontal: 15,
+					},
+				]}>
 				<View
 					style={{
-						flex: 1,
+						flexDirection: 'row',
 						alignItems: 'flex-start',
 					}}>
-					<ThemedText style={styles.title}>
-						{leave.leaveTypeDTO.leaveTypeName || ''}
-					</ThemedText>
 					<View
 						style={{
-							flexDirection: 'row',
-							alignItems: 'center',
-							marginTop: 5,
+							flex: 1,
+							alignItems: 'flex-start',
 						}}>
-						<CalendarIcon color={textColor} />
-						<ThemedText style={[styles.text, { marginLeft: 5 }]}>
-							{`${moment(leave.leaveFromDate).format('DD MMMM') || ''} to ${
-								moment(leave.leaveToDate).format('DD MMMM') || ''
-							}`}
+						<ThemedText style={styles.title}>
+							{leave.leaveTypeDTO.leaveTypeName || ''}
 						</ThemedText>
+						<View
+							style={{
+								flexDirection: 'row',
+								alignItems: 'center',
+								marginTop: 5,
+							}}>
+							<CalendarIcon color={textColor} />
+							<ThemedText
+								style={[styles.text, { marginLeft: 5, marginTop: 5 }]}>
+								{leave.leaveDays > 1
+									? `${
+											moment(leave.leaveFromDate).format('DD MMMM') || ''
+									  } to ${moment(leave.leaveToDate).format('DD MMMM') || ''}`
+									: moment(leave.leaveFromDate).format('DD MMMM')}
+							</ThemedText>
+						</View>
 					</View>
-				</View>
-				<Link
-					href='/request-details'
-					onPress={handlePress}>
+
 					<View style={styles.iconContainer}>
 						<View style={styles.iconWrapper}>
 							<AngleIcon color='#fff' />
 						</View>
 					</View>
-				</Link>
-			</View>
-			<View
-				style={{
-					flexDirection: 'row',
-					marginTop: 10,
-					width: '100%',
-					justifyContent: 'space-between',
-					alignItems: 'center',
-				}}>
-				<ThemedText
-					style={{ fontWeight: '600' }}>{`${leave.leaveDays} Days`}</ThemedText>
+				</View>
 				<View
 					style={{
-						backgroundColor:
-							leaveRequestStatuses[leave?.wfstateConfigDTO?.wfstateId || 15]
-								.color,
-						paddingHorizontal: 10,
-						paddingVertical: 5,
-						width: 'auto',
-						borderRadius: 10,
+						flexDirection: 'row',
+						marginTop: 15,
+						width: '100%',
+						justifyContent: 'space-between',
+						alignItems: 'center',
 					}}>
 					<ThemedText
-						style={[
-							styles.text,
-							{
-								fontWeight: '600',
-								color:
-									leaveRequestStatuses[leave?.wfstateConfigDTO?.wfstateId || 15]
-										.textColor,
-							},
-						]}>
-						{leave.wfStateName || ''}
-					</ThemedText>
+						style={{
+							fontSize: 14,
+							fontWeight: '500',
+						}}>{`${leave.leaveDays} ${
+						leave.leaveDays === 1 ? 'Day' : 'Days'
+					}`}</ThemedText>
+					<View
+						style={{
+							backgroundColor:
+								leaveRequestStatuses[leave?.wfstateConfigDTO?.wfstateId || 15]
+									.color,
+							paddingHorizontal: 10,
+							paddingVertical: 5,
+							width: 'auto',
+							borderRadius: 6,
+						}}>
+						<ThemedText
+							style={[
+								styles.text,
+								{
+									color:
+										leaveRequestStatuses[
+											leave?.wfstateConfigDTO?.wfstateId || 15
+										].textColor,
+								},
+							]}>
+							{leave.wfStateName || ''}
+						</ThemedText>
+					</View>
 				</View>
-			</View>
-		</ThemedView>
+			</ThemedView>
+		</Link>
 	);
 }
 
@@ -124,16 +134,16 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 	},
 	iconContainer: {
-		width: 22.5,
-		height: 22.5,
+		width: 15,
+		height: 15,
 		backgroundColor: primaryColor,
 		justifyContent: 'center',
 		alignItems: 'center',
-		borderRadius: 50,
-		padding: 5,
+		borderRadius: 15,
+		marginTop: 5,
 	},
 	iconWrapper: {
-		transform: [{ scale: 0.75 }],
+		transform: [{ scale: 0.5 }],
 	},
 	item: {
 		borderRadius: 20,
@@ -142,13 +152,12 @@ const styles = StyleSheet.create({
 		height: 'auto',
 	},
 	title: {
-		fontSize: 18,
+		fontSize: 14,
 		fontWeight: '600',
-		// fontWeight: "bold",
 	},
 	text: {
-		fontSize: 14,
-		lineHeight: 18,
+		fontSize: 12,
+		lineHeight: 12,
 	},
 });
 

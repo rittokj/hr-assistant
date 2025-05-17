@@ -11,15 +11,17 @@ import {
 	RefreshControl,
 } from 'react-native';
 import moment from 'moment';
-import { useRef, useState, useCallback } from 'react';
+import { useRef, useState, useCallback, useEffect } from 'react';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import AngleRightIcon from '@/assets/svgs/AngleRight';
 import { useAuth } from '../contexts/AuthContext';
+import { useProfile } from '../contexts/ProfileContext';
 import DefaultUserImageIcon from '@/assets/svgs/DefaultUserImage';
 import { API_URL } from '@/constants/constants';
 import { primaryColor } from '@/constants/Colors';
+import AngleIcon from '@/assets/svgs/Angle';
 
 type MenuItem = {
 	id: string;
@@ -41,20 +43,30 @@ export default function ProfileScreen() {
 	const [opened, setOpened] = useState<string[]>([]);
 	const [refreshing, setRefreshing] = useState(false);
 	const { profileInfo, logout, tokens, getProfileInfo } = useAuth();
+	const { memos, warnings, fetchMemos, fetchWarnings } = useProfile();
 	const animationValues = useRef<Record<string, Animated.Value>>({}).current;
 
 	const onRefresh = useCallback(async () => {
 		setRefreshing(true);
 		try {
 			if (tokens.employeeId) {
-				await getProfileInfo(tokens.employeeId, null, null);
+				await Promise.all([
+					getProfileInfo(tokens.employeeId, null, null),
+					fetchMemos(),
+					fetchWarnings(),
+				]);
 			}
 		} catch (error) {
 			console.error('Error refreshing profile:', error);
 		} finally {
 			setRefreshing(false);
 		}
-	}, [tokens.employeeId, getProfileInfo]);
+	}, [tokens.employeeId, getProfileInfo, fetchMemos, fetchWarnings]);
+
+	useEffect(() => {
+		fetchMemos();
+		fetchWarnings();
+	}, [profileInfo?.employeeID]);
 
 	const profileInfoList: ProfileSection[] = [
 		{
@@ -150,21 +162,23 @@ export default function ProfileScreen() {
 		},
 		{
 			id: 'Warning',
+			size: 85,
 			label: 'Warning',
-			size: 80,
-			list: [
-				{
-					id: 'Warning_Message',
-					label: 'Warning Message',
-					value: 'First Warning',
-				},
-			],
+			list: warnings.map((warning) => ({
+				id: `warning-${warning.employeeWarningId}`,
+				label: warning.warningMessage,
+				openable: true,
+			})),
 		},
 		{
 			id: 'Memo',
-			size: 80,
+			size: 85,
 			label: 'Memo',
-			list: [{ id: 'Memo-Code', label: 'Memo Code', value: 'M20' }],
+			list: memos.map((memo) => ({
+				id: `memo-${memo.memoDTO.memoId}`,
+				label: memo.memoDTO.subject,
+				openable: true,
+			})),
 		},
 	];
 
@@ -307,26 +321,50 @@ export default function ProfileScreen() {
 														colorScheme === 'dark' ? '#373737' : '#ECE9F2',
 												},
 											]}>
-											{item?.list?.map((menuItem, index) => (
-												<View
-													key={menuItem.id}
-													style={[
-														styles.detailsItem,
-														{
-															borderBottomWidth:
-																item?.list?.length - 1 === index ? 0 : 1,
-															borderBottomColor:
-																colorScheme === 'dark' ? '#373737' : '#ECE9F2',
-														},
-													]}>
-													<ThemedText>{menuItem.label}</ThemedText>
-													<ThemedText>
-														{menuItem?.type === 'date'
-															? moment(menuItem.value).format('DD MMM YYYY')
-															: menuItem.value}
-													</ThemedText>
-												</View>
-											))}
+											{item?.list?.map((menuItem, index) => {
+												const Wrapper = menuItem?.openable
+													? TouchableOpacity
+													: View;
+												return (
+													<Wrapper
+														key={menuItem.id}
+														style={[
+															styles.detailsItem,
+															{
+																borderBottomWidth:
+																	item?.list?.length - 1 === index ? 0 : 1,
+																borderBottomColor:
+																	colorScheme === 'dark'
+																		? '#373737'
+																		: '#ECE9F2',
+																alignItems: menuItem?.openable
+																	? 'center'
+																	: 'flex-start',
+															},
+														]}>
+														<ThemedText
+															style={{
+																flex: 1,
+																paddingRight: menuItem?.openable ? 20 : 0,
+															}}>
+															{menuItem.label}
+														</ThemedText>
+														{menuItem?.openable ? (
+															<TouchableOpacity style={styles.iconContainer}>
+																<View style={styles.iconWrapper}>
+																	<AngleIcon color='#fff' />
+																</View>
+															</TouchableOpacity>
+														) : (
+															<ThemedText>
+																{menuItem?.type === 'date'
+																	? moment(menuItem.value).format('DD MMM YYYY')
+																	: menuItem.value}
+															</ThemedText>
+														)}
+													</Wrapper>
+												);
+											})}
 										</View>
 									</Animated.View>
 								</View>
@@ -354,6 +392,18 @@ const styles = StyleSheet.create({
 		width: '100%',
 		paddingHorizontal: 20,
 		paddingBottom: 10,
+	},
+	iconContainer: {
+		width: 15,
+		height: 15,
+		backgroundColor: primaryColor,
+		justifyContent: 'center',
+		alignItems: 'center',
+		borderRadius: 50,
+		padding: 5,
+	},
+	iconWrapper: {
+		transform: [{ scale: 0.5 }],
 	},
 	requestsContainer: {
 		paddingVertical: 10,

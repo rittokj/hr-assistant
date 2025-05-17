@@ -35,9 +35,7 @@ function PaySlip({ setOpen, slip }: PaySlipProps) {
 				</View>
 				<TouchableOpacity onPress={() => setOpen(slip.payrollGenerationId)}>
 					<View style={styles.detailsContainer}>
-						<ThemedText style={[styles.text, styles.detailsText]}>
-							Details
-						</ThemedText>
+						<ThemedText style={styles.detailsText}>Details</ThemedText>
 						<View style={styles.iconContainer}>
 							<View style={styles.iconWrapper}>
 								<AngleIcon color='#fff' />
@@ -50,19 +48,19 @@ function PaySlip({ setOpen, slip }: PaySlipProps) {
 				<View style={styles.summaryItem}>
 					<ThemedText style={styles.text}>Incentive</ThemedText>
 					<ThemedText style={styles.textBold}>{`AED ${
-						slip?.addition || ''
+						slip?.addition || '0.00'
 					}`}</ThemedText>
 				</View>
-				<View style={styles.summaryItem}>
+				<View style={[styles.summaryItem, { alignItems: 'center' }]}>
 					<ThemedText style={styles.textRed}>Deduction</ThemedText>
 					<ThemedText style={styles.textRedBold}>{`AED ${
-						slip?.deduction || ''
+						slip?.deduction || '0.00'
 					}`}</ThemedText>
 				</View>
-				<View style={styles.summaryItem}>
+				<View style={[styles.summaryItem, { alignItems: 'flex-end' }]}>
 					<ThemedText style={styles.text}>Net Salary</ThemedText>
 					<ThemedText style={styles.textBold}>{`AED ${
-						slip?.totalAmount || ''
+						slip?.totalAmount || '0.00'
 					}`}</ThemedText>
 				</View>
 			</View>
@@ -116,6 +114,7 @@ const styles = StyleSheet.create({
 	},
 	detailsText: {
 		marginRight: 10,
+		fontSize: 12,
 	},
 	iconContainer: {
 		width: 15,
@@ -137,7 +136,8 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 	},
 	summaryItem: {
-		gap: 6,
+		gap: 2,
+		flex: 1,
 	},
 });
 

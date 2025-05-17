@@ -106,7 +106,9 @@ export default function HomeScreen() {
 					</View>
 				</View>
 				<Link href='/notifications'>
-					<BellIcon color={primaryColor} />
+					<View style={{ padding: 20 }}>
+						<BellIcon color={primaryColor} />
+					</View>
 				</Link>
 			</ThemedView>
 			<ScrollView
@@ -211,10 +213,12 @@ export default function HomeScreen() {
 						</View>
 						<View style={styles.attendanceSectionText}>
 							{isCurrentDayLoading ? (
-								<ThemedText>Loading...</ThemedText>
+								<ThemedText style={{ height: 40 }}>Loading...</ThemedText>
 							) : (
 								<>
-									<ThemedText type='title'>
+									<ThemedText
+										type='title'
+										style={{ height: 40 }}>
 										{currentDayAttendance.checkOut.time || '--:--'}
 									</ThemedText>
 									<ThemedText>
@@ -270,8 +274,8 @@ const styles = StyleSheet.create({
 		alignItems: 'center',
 		gap: 8,
 		justifyContent: 'space-between',
-		paddingHorizontal: 20,
 		paddingVertical: 10,
+		paddingLeft: 20,
 		paddingTop: Platform.OS === 'android' ? 72 : 10,
 	},
 	titleGraphSection: {
@@ -316,8 +320,8 @@ const styles = StyleSheet.create({
 		flexDirection: 'row',
 		width: '100%',
 		flex: 1,
-		gap: 16,
-		padding: 20,
+		paddingHorizontal: 20,
+		paddingBottom: 20,
 	},
 	swipeButtonSection: {
 		flex: 1,

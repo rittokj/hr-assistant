@@ -71,7 +71,8 @@ export default function AttendanceScreen() {
 							padding: 10,
 							justifyContent: 'space-between',
 						}}>
-						<ThemedText style={{ fontSize: 14, marginRight: 5 }}>
+						<ThemedText
+							style={{ fontSize: 14, marginRight: 5, fontWeight: '400' }}>
 							{item.title}
 						</ThemedText>
 						<View
@@ -130,7 +131,7 @@ export default function AttendanceScreen() {
 							alignItems: 'center',
 						}}>
 						<ThemedText
-							style={{ fontSize: 18, textAlign: 'right', marginRight: 5 }}>
+							style={{ fontSize: 16, textAlign: 'right', marginRight: 5 }}>
 							{selectedMonth.label}
 						</ThemedText>
 						<CircleAngleDownIcon

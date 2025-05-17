@@ -30,7 +30,7 @@ function DailyAttendence({ attendance }: any) {
 			style={[
 				styles.item,
 				{
-					borderColor: '#474747',
+					borderColor: '#999',
 					backgroundColor: colorScheme === 'dark' ? '#171717' : '#fff',
 					borderBottomWidth: 1,
 				},
@@ -38,8 +38,6 @@ function DailyAttendence({ attendance }: any) {
 			<View
 				style={{
 					flexDirection: 'row',
-					alignItems: 'center',
-					justifyContent: 'space-between',
 				}}>
 				<View
 					style={{
@@ -52,21 +50,18 @@ function DailyAttendence({ attendance }: any) {
 								backgroundColor: dateBgColor,
 							},
 						]}>
-						<ThemedText style={{ color: dateTextColor }}>
+						<ThemedText style={{ color: dateTextColor, fontSize: 14 }}>
 							{moment(attendance.attDate).format('DD')}
 						</ThemedText>
 					</View>
 					<View>
-						<ThemedText style={styles.text}>
-							{moment(attendance.attDate).format('dddd')}
-						</ThemedText>
 						<View
 							style={{
-								flexDirection: 'row',
-								alignItems: 'center',
-								marginTop: 5,
 								minWidth: 85,
 							}}>
+							<ThemedText style={styles.smallText}>
+								{moment(attendance.attDate).format('dddd')}
+							</ThemedText>
 							<ThemedText
 								style={
 									styles.text
@@ -74,8 +69,14 @@ function DailyAttendence({ attendance }: any) {
 						</View>
 					</View>
 				</View>
-				<View style={styles.attendanceSection}>
-					<View style={styles.attendanceSectionText}>
+				<View
+					style={{
+						flexDirection: 'row',
+						flex: 1,
+						alignItems: 'flex-start',
+						justifyContent: 'space-between',
+					}}>
+					<View style={styles.attendanceSection}>
 						<View
 							style={[
 								styles.arrowWrapper,
@@ -88,12 +89,14 @@ function DailyAttendence({ attendance }: any) {
 						</View>
 						<View>
 							<ThemedText style={styles.smallText}>Check in</ThemedText>
-							<ThemedText style={styles.smallText}>09:03AM</ThemedText>
+							<ThemedText style={styles.text}>
+								{attendance?.startTime
+									? moment(attendance?.startTime, 'HH:mm:ss').format('h:mm A')
+									: '-'}
+							</ThemedText>
 						</View>
 					</View>
-				</View>
-				<View style={styles.attendanceSection}>
-					<View style={styles.attendanceSectionText}>
+					<View style={styles.attendanceSection}>
 						<View
 							style={[
 								styles.arrowWrapper,
@@ -106,7 +109,11 @@ function DailyAttendence({ attendance }: any) {
 						</View>
 						<View>
 							<ThemedText style={styles.smallText}>Check out</ThemedText>
-							<ThemedText style={styles.smallText}>09:03AM</ThemedText>
+							<ThemedText style={styles.text}>
+								{attendance?.endTime
+									? moment(attendance?.endTime, 'HH:mm:ss').format('h:mm A')
+									: '-'}
+							</ThemedText>
 						</View>
 					</View>
 				</View>
@@ -123,37 +130,33 @@ const styles = StyleSheet.create({
 		marginHorizontal: 20,
 		paddingVertical: 20,
 	},
-	title: {
-		fontSize: 18,
-		fontWeight: '600',
-	},
 	text: {
 		fontSize: 14,
 	},
 	smallText: {
 		fontSize: 12,
+		lineHeight: 12,
 	},
 	arrowWrapper: {
 		backgroundColor: '#E6F2FF',
-		width: 40,
-		height: 40,
+		width: 30,
+		height: 30,
 		borderRadius: 10,
 		justifyContent: 'center',
 		alignItems: 'center',
 		marginRight: 10,
 	},
 	circleWrapper: {
-		width: 40,
-		height: 40,
+		width: 30,
+		height: 30,
 		borderRadius: 20,
 		justifyContent: 'center',
 		alignItems: 'center',
 		marginRight: 10,
 	},
-	attendanceSection: {},
-	attendanceSectionText: {
+	attendanceSection: {
 		flexDirection: 'row',
-		alignItems: 'center',
+		alignItems: 'flex-start',
 	},
 });
 
