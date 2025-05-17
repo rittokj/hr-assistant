@@ -9,9 +9,15 @@ import {
 	useColorScheme,
 	Animated,
 	RefreshControl,
+	Text,
 } from 'react-native';
 import moment from 'moment';
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useRef, useState, useCallback, useEffect, useMemo } from 'react';
+import { WebView } from 'react-native-webview';
+import BottomSheet, {
+	BottomSheetBackdrop,
+	BottomSheetScrollView,
+} from '@gorhom/bottom-sheet';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -22,12 +28,15 @@ import DefaultUserImageIcon from '@/assets/svgs/DefaultUserImage';
 import { API_URL } from '@/constants/constants';
 import { primaryColor } from '@/constants/Colors';
 import AngleIcon from '@/assets/svgs/Angle';
+import CloseIcon from '@/assets/svgs/Close';
 
 type MenuItem = {
 	id: string;
 	label: string;
-	value: string;
+	openable?: boolean;
+	value?: string;
 	type?: 'date';
+	memo?: any;
 };
 
 type ProfileSection = {
@@ -42,9 +51,38 @@ export default function ProfileScreen() {
 	const [selected, setSelected] = useState('');
 	const [opened, setOpened] = useState<string[]>([]);
 	const [refreshing, setRefreshing] = useState(false);
+	const [webViewTest, setWebViewTest] = useState<any>(null);
+	const sheetRef = useRef<BottomSheet>(null);
+	const snapPoints = useMemo(() => ['65%'], []);
 	const { profileInfo, logout, tokens, getProfileInfo } = useAuth();
 	const { memos, warnings, fetchMemos, fetchWarnings } = useProfile();
 	const animationValues = useRef<Record<string, Animated.Value>>({}).current;
+
+	const handleSnapPress = (text: any, title: any) => {
+		console.log(title);
+		setWebViewTest({ text, title });
+		setTimeout(() => {
+			sheetRef.current?.snapToIndex(0);
+		}, 600);
+	};
+
+	const closeModal = () => {
+		sheetRef.current?.close();
+		setWebViewTest(null);
+	};
+
+	const renderBackdrop = useCallback(
+		(props: any) => (
+			<BottomSheetBackdrop
+				{...props}
+				disappearsOnIndex={-1}
+				appearsOnIndex={0}
+				onPress={null}
+				pressBehavior='none'
+			/>
+		),
+		[]
+	);
 
 	const onRefresh = useCallback(async () => {
 		setRefreshing(true);
@@ -164,21 +202,26 @@ export default function ProfileScreen() {
 			id: 'Warning',
 			size: 85,
 			label: 'Warning',
-			list: warnings.map((warning) => ({
-				id: `warning-${warning.employeeWarningId}`,
-				label: warning.warningMessage,
-				openable: true,
-			})),
+			list: warnings?.length
+				? warnings.map((warning) => ({
+						id: `warning-${warning.employeeWarningId}`,
+						label: warning.warningMessage,
+						openable: true,
+				  }))
+				: [],
 		},
 		{
 			id: 'Memo',
 			size: 85,
 			label: 'Memo',
-			list: memos.map((memo) => ({
-				id: `memo-${memo.memoDTO.memoId}`,
-				label: memo.memoDTO.subject,
-				openable: true,
-			})),
+			list: memos?.length
+				? memos.map((memo) => ({
+						id: `memo-${memo.memoDTO.memoId}`,
+						label: memo.memoDTO.subject,
+						openable: true,
+						memo: memo,
+				  }))
+				: [],
 		},
 	];
 
@@ -202,6 +245,21 @@ export default function ProfileScreen() {
 		}).start();
 		setOpened(list);
 	};
+
+	const htmlContent = useMemo(() => {
+		return `<html>
+			<head>
+			<meta name="viewport" content="width=device-width, initial-scale=1">
+			<style>
+				body { font-family: sans-serif; padding: 16px; font-size: 16px; padding-bottom:120px; overflow: auto }
+				ul { padding-left: 20px; }
+			</style>
+			</head>
+			<body>
+			${webViewTest?.text}
+			</body>
+		</html>`;
+	}, [webViewTest]);
 
 	return (
 		<SafeAreaView style={styles.container}>
@@ -268,7 +326,7 @@ export default function ProfileScreen() {
 							}
 							const animatedHeight = animationValues[item.id].interpolate({
 								inputRange: [0, 1],
-								outputRange: [0, item.list.length * item.size],
+								outputRange: [0, (item.list.length || 1) * item.size],
 							});
 							const animatedOpacity = animationValues[item.id].interpolate({
 								inputRange: [0, 1],
@@ -321,50 +379,76 @@ export default function ProfileScreen() {
 														colorScheme === 'dark' ? '#373737' : '#ECE9F2',
 												},
 											]}>
-											{item?.list?.map((menuItem, index) => {
-												const Wrapper = menuItem?.openable
-													? TouchableOpacity
-													: View;
-												return (
-													<Wrapper
-														key={menuItem.id}
-														style={[
-															styles.detailsItem,
-															{
-																borderBottomWidth:
-																	item?.list?.length - 1 === index ? 0 : 1,
-																borderBottomColor:
-																	colorScheme === 'dark'
-																		? '#373737'
-																		: '#ECE9F2',
-																alignItems: menuItem?.openable
-																	? 'center'
-																	: 'flex-start',
-															},
-														]}>
-														<ThemedText
-															style={{
-																flex: 1,
-																paddingRight: menuItem?.openable ? 20 : 0,
-															}}>
-															{menuItem.label}
-														</ThemedText>
-														{menuItem?.openable ? (
-															<TouchableOpacity style={styles.iconContainer}>
-																<View style={styles.iconWrapper}>
-																	<AngleIcon color='#fff' />
-																</View>
-															</TouchableOpacity>
-														) : (
-															<ThemedText>
-																{menuItem?.type === 'date'
-																	? moment(menuItem.value).format('DD MMM YYYY')
-																	: menuItem.value}
+											{item?.list?.length ? (
+												item.list.map((menuItem, index) => {
+													const Wrapper = menuItem?.openable
+														? TouchableOpacity
+														: View;
+													return (
+														<Wrapper
+															key={menuItem.id}
+															onPress={() => {
+																if (item.id === 'Memo' && menuItem.memo) {
+																	handleSnapPress(
+																		menuItem.memo?.memoDTO?.memoText,
+																		menuItem.memo?.memoDTO?.subject
+																	);
+																}
+																if (item.id === 'Warning') {
+																	handleSnapPress(menuItem.label, menuItem.id);
+																}
+															}}
+															style={[
+																styles.detailsItem,
+																{
+																	borderBottomWidth:
+																		item?.list?.length - 1 === index ? 0 : 1,
+																	borderBottomColor:
+																		colorScheme === 'dark'
+																			? '#373737'
+																			: '#ECE9F2',
+																	alignItems: menuItem?.openable
+																		? 'center'
+																		: 'flex-start',
+																},
+															]}>
+															<ThemedText
+																style={{
+																	flex: 1,
+																	paddingRight: menuItem?.openable ? 20 : 0,
+																}}>
+																{menuItem.label}
 															</ThemedText>
-														)}
-													</Wrapper>
-												);
-											})}
+															{menuItem?.openable ? (
+																<TouchableOpacity style={styles.iconContainer}>
+																	<View style={styles.iconWrapper}>
+																		<AngleIcon color='#fff' />
+																	</View>
+																</TouchableOpacity>
+															) : (
+																<ThemedText>
+																	{menuItem?.type === 'date'
+																		? moment(menuItem.value).format(
+																				'DD MMM YYYY'
+																		  )
+																		: menuItem.value}
+																</ThemedText>
+															)}
+														</Wrapper>
+													);
+												})
+											) : (
+												<View style={[styles.detailsItem]}>
+													<ThemedText
+														style={{
+															color: '#999',
+															textAlign: 'center',
+															flex: 1,
+														}}>
+														{`${item.label} not available`}
+													</ThemedText>
+												</View>
+											)}
 										</View>
 									</Animated.View>
 								</View>
@@ -378,6 +462,32 @@ export default function ProfileScreen() {
 					</View>
 				</ScrollView>
 			</ThemedView>
+			<BottomSheet
+				ref={sheetRef}
+				snapPoints={snapPoints}
+				enableDynamicSizing={false}
+				index={-1}
+				handleComponent={null}
+				backdropComponent={renderBackdrop}>
+				<View style={styles.headerContainer}>
+					<Text style={styles.headerText}>{webViewTest?.title || ''}</Text>
+					<TouchableOpacity
+						onPress={closeModal}
+						style={styles.closeButton}>
+						<CloseIcon color='#fff' />
+					</TouchableOpacity>
+				</View>
+				<View style={{ flex: 1 }}>
+					<WebView
+						style={{ flex: 1 }}
+						source={{
+							html: htmlContent,
+						}}
+						scrollEnabled={true}
+						nestedScrollEnabled={true}
+					/>
+				</View>
+			</BottomSheet>
 		</SafeAreaView>
 	);
 }
@@ -454,5 +564,22 @@ const styles = StyleSheet.create({
 		paddingVertical: 15,
 		marginBottom: 15,
 		borderRadius: 15,
+	},
+	headerContainer: {
+		padding: 20,
+		flexDirection: 'row',
+		justifyContent: 'space-between',
+		alignItems: 'flex-start',
+	},
+	headerText: { fontWeight: '600', flex: 1, fontSize: 16 },
+	closeButton: { padding: 10, backgroundColor: '#000', borderRadius: 20 },
+	titleContainer: {
+		margin: 20,
+		fontSize: 16,
+	},
+	emptyText: {
+		color: '#999',
+		textAlign: 'center',
+		flex: 1,
 	},
 });
