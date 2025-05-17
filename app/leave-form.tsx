@@ -80,6 +80,7 @@ export default function LeaveFormScreen() {
 	const [formData, setFormData] = useState(formDataModel);
 	const [open, setOpen] = useState(false);
 	const [checkingAvailability, setCheckingAvailability] = useState(false);
+	const [availableLeaveCount, setAvailableLeaveCount] = useState(null);
 	const [openDatePicker, setOpenDatePicker] = useState(false);
 
 	const getDocument = () => {
@@ -98,14 +99,29 @@ export default function LeaveFormScreen() {
 				);
 			case 'dropdown':
 				return (
-					<TouchableOpacity
-						onPress={() => setOpen(true)}
-						style={{ flexDirection: 'row', alignItems: 'center' }}>
-						<ThemedText
-							style={{ fontSize: 14, textAlign: 'right', marginRight: 5 }}>
-							{item.value}
-						</ThemedText>
-						<SmallAngleIcon color={colorScheme === 'dark' ? '#fff' : '#000'} />
+					<TouchableOpacity onPress={() => setOpen(true)}>
+						<View style={{ flexDirection: 'row', alignItems: 'center' }}>
+							<ThemedText
+								style={{ fontSize: 14, textAlign: 'right', marginRight: 5 }}>
+								{item.value}
+							</ThemedText>
+							<SmallAngleIcon
+								color={colorScheme === 'dark' ? '#fff' : '#000'}
+							/>
+						</View>
+						{item.value ? (
+							<ThemedText
+								style={{
+									fontSize: 12,
+									textAlign: 'right',
+									marginRight: 5,
+									color: '#999',
+								}}>{`Available: ${
+								availableLeaveCount || availableLeaveCount === 0
+									? availableLeaveCount
+									: '...'
+							}`}</ThemedText>
+						) : null}
 					</TouchableOpacity>
 				);
 			case 'toggle':
@@ -227,11 +243,15 @@ export default function LeaveFormScreen() {
 						<ThemedTextInput
 							multiline
 							style={{
-								width: 240,
+								width: '100%',
 								height: 80,
 								borderRadius: 5,
-								padding: 10,
+								paddingHorizontal: 10,
+								borderColor: '#444',
+								borderWidth: 0.5,
 							}}
+							placeholderTextColor='#999'
+							placeholder='Please enter the reason'
 						/>
 					</View>
 				);
@@ -259,24 +279,27 @@ export default function LeaveFormScreen() {
 
 	const toggleLeave = (leave) => {
 		setCheckingAvailability(true);
+		setAvailableLeaveCount(null);
 		checkLeaveAvailability(profileInfo.employeeID, leave.leaveTypeId)
 			.then((res) => {
-				if (res.data.result.allocatedCount === 0) {
+				const { result } = res.data;
+				const availableLeave = result.allocatedCount - result.reservedCount;
+				setAvailableLeaveCount(availableLeave);
+				if (!availableLeave) {
 					Toast.show({
 						type: 'error',
 						text1: `You have used all your ${leave.leaveTypeName || ''} days.`,
 						position: 'bottom',
 						visibilityTime: 8000,
 					});
-				} else {
-					const updatedFormData = formData.map((data) => {
-						if (data.id === 'leaveType') {
-							return { ...data, value: leave.leaveTypeName, metaData: leave };
-						}
-						return data;
-					});
-					setFormData(updatedFormData);
 				}
+				const updatedFormData = formData.map((data) => {
+					if (data.id === 'leaveType') {
+						return { ...data, value: leave.leaveTypeName, metaData: leave };
+					}
+					return data;
+				});
+				setFormData(updatedFormData);
 			})
 			.finally(() => setCheckingAvailability(false));
 	};
@@ -295,6 +318,14 @@ export default function LeaveFormScreen() {
 			Toast.show({
 				type: 'error',
 				text1: 'Please complete all fields before submitting.',
+				position: 'bottom',
+			});
+			return;
+		}
+		if (!availableLeaveCount || availableLeaveCount === 0) {
+			Toast.show({
+				type: 'error',
+				text1: `You have used all your ${leaveType?.leaveTypeName || ''} days.`,
 				position: 'bottom',
 			});
 			return;
@@ -364,9 +395,19 @@ export default function LeaveFormScreen() {
 					{formData.map((item) => (
 						<View
 							key={item.id}
-							style={styles.container}>
+							style={[
+								styles.container,
+								{
+									flexDirection: item.id === 'reason' ? 'column' : 'row',
+								},
+							]}>
 							<View>
-								<ThemedText style={{ fontSize: 14, textAlign: 'left' }}>
+								<ThemedText
+									style={{
+										fontSize: 14,
+										textAlign: 'left',
+										paddingBottom: item.id === 'reason' ? 10 : 0,
+									}}>
 									{item.label}
 								</ThemedText>
 							</View>
