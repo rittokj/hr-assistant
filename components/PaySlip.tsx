@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import moment from 'moment';
 
 import AngleIcon from '@/assets/svgs/Angle';
 import { ThemedText } from './ThemedText';
-import moment = require('moment');
 import { primaryColor } from '@/constants/Colors';
 
 interface PaySlipProps {
