@@ -86,7 +86,45 @@ function StackLayout() {
 			/>
 			<Stack.Screen
 				name='notifications'
-				options={{ headerShown: false }}
+				options={{
+					title: '',
+					header: (props) => {
+						return (
+							<View
+								style={{
+									marginTop: 70,
+									marginLeft: 20,
+									flexDirection: 'row',
+									alignItems: 'center',
+									paddingBottom: 20,
+								}}>
+								<TouchableOpacity onPress={() => props.navigation.goBack()}>
+									<View
+										style={{
+											width: 35,
+											height: 35,
+											backgroundColor:
+												colorScheme === 'dark' ? '#171717' : '#000',
+											justifyContent: 'center',
+											alignItems: 'center',
+											borderRadius: 50,
+											marginRight: 10,
+											transform: [{ rotate: '180deg' }],
+										}}>
+										<AngleIcon color='#fff' />
+									</View>
+								</TouchableOpacity>
+								<ThemedText
+									style={{
+										fontSize: 20,
+										fontWeight: 'bold',
+									}}>
+									Notifications
+								</ThemedText>
+							</View>
+						);
+					},
+				}}
 			/>
 			<Stack.Screen
 				name='leave-form'

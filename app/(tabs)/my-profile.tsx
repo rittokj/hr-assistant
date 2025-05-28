@@ -57,6 +57,8 @@ export default function ProfileScreen() {
 	const { profileInfo, logout, tokens, getProfileInfo } = useAuth();
 	const { memos, warnings, fetchMemos, fetchWarnings } = useProfile();
 	const animationValues = useRef<Record<string, Animated.Value>>({}).current;
+	const [showLogoutSheet, setShowLogoutSheet] = useState(false);
+	const logoutSheetRef = useRef<BottomSheet>(null);
 
 	const handleSnapPress = (text: any, title: any) => {
 		console.log(title);
@@ -69,6 +71,18 @@ export default function ProfileScreen() {
 	const closeModal = () => {
 		sheetRef.current?.close();
 		setWebViewTest(null);
+	};
+
+	const handleLogoutPress = () => {
+		setShowLogoutSheet(true);
+		setTimeout(() => {
+			logoutSheetRef.current?.snapToIndex(0);
+		}, 100);
+	};
+
+	const closeLogoutSheet = () => {
+		logoutSheetRef.current?.close();
+		setShowLogoutSheet(false);
 	};
 
 	const renderBackdrop = useCallback(
@@ -251,7 +265,7 @@ export default function ProfileScreen() {
 			<head>
 			<meta name="viewport" content="width=device-width, initial-scale=1">
 			<style>
-				body { font-family: sans-serif; padding: 16px; font-size: 16px; padding-bottom:120px; overflow: auto }
+				body { font-family: sans-serif; padding: 16px; font-size: 12px; padding-bottom:120px; overflow: auto }
 				ul { padding-left: 20px; }
 			</style>
 			</head>
@@ -308,13 +322,14 @@ export default function ProfileScreen() {
 							<ThemedText
 								style={{
 									color: '#fff',
-									fontSize: 20,
-									fontWeight: '600',
+									fontSize: 18,
+									fontWeight: '500',
 									marginBottom: 5,
 								}}>
 								{profileInfo?.employeeName || ''}
 							</ThemedText>
-							<ThemedText style={{ color: '#fff', fontSize: 14 }}>
+							<ThemedText
+								style={{ color: '#fff', fontWeight: '500', fontSize: 14 }}>
 								{profileInfo?.designationDTO?.designationName || ''}
 							</ThemedText>
 						</View>
@@ -345,6 +360,7 @@ export default function ProfileScreen() {
 											},
 										]}>
 										<ThemedText
+											style={{ fontSize: 12, fontWeight: '500' }}
 											lightColor='#171717'
 											darkColor='#ccc'>
 											{item.label}
@@ -415,6 +431,7 @@ export default function ProfileScreen() {
 															<ThemedText
 																style={{
 																	flex: 1,
+																	fontSize: 12,
 																	paddingRight: menuItem?.openable ? 20 : 0,
 																}}>
 																{menuItem.label}
@@ -426,7 +443,8 @@ export default function ProfileScreen() {
 																	</View>
 																</TouchableOpacity>
 															) : (
-																<ThemedText>
+																<ThemedText
+																	style={{ fontSize: 12, fontWeight: '500' }}>
 																	{menuItem?.type === 'date'
 																		? moment(menuItem.value).format(
 																				'DD MMM YYYY'
@@ -444,6 +462,8 @@ export default function ProfileScreen() {
 															color: '#999',
 															textAlign: 'center',
 															flex: 1,
+															fontSize: 12,
+															fontWeight: '500',
 														}}>
 														{`${item.label} not available`}
 													</ThemedText>
@@ -455,9 +475,12 @@ export default function ProfileScreen() {
 							);
 						})}
 						<TouchableOpacity
-							onPress={logout}
+							onPress={handleLogoutPress}
 							style={[styles.linksItem, { backgroundColor: '#FF3B30' }]}>
-							<ThemedText style={{ color: '#fff' }}>Logout</ThemedText>
+							<ThemedText
+								style={{ color: '#fff', fontSize: 12, fontWeight: '500' }}>
+								Logout
+							</ThemedText>
 						</TouchableOpacity>
 					</View>
 				</ScrollView>
@@ -486,6 +509,44 @@ export default function ProfileScreen() {
 						scrollEnabled={true}
 						nestedScrollEnabled={true}
 					/>
+				</View>
+			</BottomSheet>
+			<BottomSheet
+				ref={logoutSheetRef}
+				snapPoints={['25%']}
+				enableDynamicSizing={false}
+				index={-1}
+				handleComponent={null}
+				backdropComponent={renderBackdrop}>
+				<View style={styles.headerContainer}>
+					<Text style={styles.headerText}>Logout Confirmation</Text>
+					<TouchableOpacity
+						onPress={closeLogoutSheet}
+						style={styles.closeButton}>
+						<CloseIcon color='#fff' />
+					</TouchableOpacity>
+				</View>
+				<View style={{ padding: 20 }}>
+					<Text style={{ fontSize: 12, marginBottom: 20 }}>
+						Are you sure you want to logout?
+					</Text>
+					<View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+						<TouchableOpacity
+							onPress={closeLogoutSheet}
+							style={{ marginRight: 20 }}>
+							<Text style={{ color: '#999', fontSize: 12 }}>Cancel</Text>
+						</TouchableOpacity>
+						<TouchableOpacity
+							onPress={() => {
+								closeLogoutSheet();
+								logout();
+							}}>
+							<Text
+								style={{ color: '#FF3B30', fontSize: 12, fontWeight: '500' }}>
+								Logout
+							</Text>
+						</TouchableOpacity>
+					</View>
 				</View>
 			</BottomSheet>
 		</SafeAreaView>
@@ -567,11 +628,12 @@ const styles = StyleSheet.create({
 	},
 	headerContainer: {
 		padding: 20,
+		paddingBottom: 0,
 		flexDirection: 'row',
 		justifyContent: 'space-between',
 		alignItems: 'flex-start',
 	},
-	headerText: { fontWeight: '600', flex: 1, fontSize: 16 },
+	headerText: { fontWeight: '500', flex: 1, fontSize: 14 },
 	closeButton: { padding: 10, backgroundColor: '#000', borderRadius: 20 },
 	titleContainer: {
 		margin: 20,

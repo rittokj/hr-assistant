@@ -1,87 +1,36 @@
-import React, {
-	useEffect,
-	useCallback,
-	useState,
-	useMemo,
-	useRef,
-} from 'react';
+import React, { useEffect, useCallback } from 'react';
 import {
 	View,
 	FlatList,
-	Text,
 	StyleSheet,
 	useColorScheme,
 	ActivityIndicator,
 	TouchableOpacity,
 } from 'react-native';
-import { WebView } from 'react-native-webview';
-import BottomSheet, {
-	BottomSheetBackdrop,
-	BottomSheetScrollView,
-} from '@gorhom/bottom-sheet';
+import moment from 'moment';
 
-import { useNotification } from './contexts/NotificationContext';
 import NotificationLoader from '@/components/NotificationLoader';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import CloseIcon from '@/assets/svgs/Close';
 import { primaryColor } from '@/constants/Colors';
+import { useNotification } from './contexts/NotificationContext';
 
 interface Notification {
-	id: string;
-	message: string;
-	timestamp: string;
+	notificationLogId: number;
+	subject: string;
+	notificationMessage: string;
+	createDate: string;
 }
 
-const notifications = [
-	{
-		notificationLogId: 27001,
-		notificationMessage:
-			'<p>Dear Team,</p>\n                <p>I would like to bring to your attention an important information regarding unemployment\n                insurance. It’s mandatory to enroll in the (ILOE), also known as Unemployment Insurance\n                Scheme, in time to avoid the fine amount of AED 400/-. All employees who are residing in\n                UAE on employment visa, after processing the emirates ID are individually responsible to\n                enroll in this insurance, company will not be liable for any employee insurance or the fine\n                amount due to the overdue.</p>\n                <p>Please follow the below guideline to apply ILOE insurance through a mobile device:</p>\n                <ul>\n                    <li>Download the ILOE App from Google Play Store.</li>\n                    <li>Create an account or log in if you already have one.</li>\n                    <li>Use the app’s search feature or navigate to the insurance section to find the ILOE\n                    insurance (i.e., annual, 12 months insurance for AED 63).</li>\n                    <li>Enter the required information for a quote, such as personal details, business\n                    information, and coverage needs.</li>\n                    <li>Proceed with the amount in the quote and pay via bank transfer.</li>\n                    <li>Review your application details and submit them. You may receive confirmation and\n                    further instructions via email or in-app notifications.</li>\n                </ul>',
-	},
-	{
-		notificationLogId: 27000,
-		notificationMessage:
-			'<p>Dear Team,</p>\n                <p>I would like to bring to your attention an important information regarding unemployment\n                insurance. It’s mandatory to enroll in the (ILOE), also known as Unemployment Insurance\n                Scheme, in time to avoid the fine amount of AED 400/-. All employees who are residing in\n                UAE on employment visa, after processing the emirates ID are individually responsible to\n                enroll in this insurance, company will not be liable for any employee insurance or the fine\n                amount due to the overdue.</p>\n                <p>Please follow the below guideline to apply ILOE insurance through a mobile device:</p>\n                <ul>\n                    <li>Download the ILOE App from Google Play Store.</li>\n                    <li>Create an account or log in if you already have one.</li>\n                    <li>Use the app’s search feature or navigate to the insurance section to find the ILOE\n                    insurance (i.e., annual, 12 months insurance for AED 63).</li>\n                    <li>Enter the required information for a quote, such as personal details, business\n                    information, and coverage needs.</li>\n                    <li>Proceed with the amount in the quote and pay via bank transfer.</li>\n                    <li>Review your application details and submit them. You may receive confirmation and\n                    further instructions via email or in-app notifications.</li>\n                </ul>',
-	},
-	{
-		notificationLogId: 10996,
-		notificationMessage:
-			'<div>aaaaaaaaa aaaaaaaa aaaaaaaa aaaaaa aaaaaaaa aaaaaaaaaa aaaaaaaaaaaaa&nbsp; f</div>',
-	},
-	{
-		notificationLogId: 9997,
-		notificationMessage:
-			'<p>Dear Team,</p>\n                <p>I would like to bring to your attention an important information regarding unemployment\n                insurance. It’s mandatory to enroll in the (ILOE), also known as Unemployment Insurance\n                Scheme, in time to avoid the fine amount of AED 400/-. All employees who are residing in\n                UAE on employment visa, after processing the emirates ID are individually responsible to\n                enroll in this insurance, company will not be liable for any employee insurance or the fine\n                amount due to the overdue.</p>\n                <p>Please follow the below guideline to apply ILOE insurance through a mobile device:</p>\n                <ul>\n                    <li>Download the ILOE App from Google Play Store.</li>\n                    <li>Create an account or log in if you already have one.</li>\n                    <li>Use the app’s search feature or navigate to the insurance section to find the ILOE\n                    insurance (i.e., annual, 12 months insurance for AED 63).</li>\n                    <li>Enter the required information for a quote, such as personal details, business\n                    information, and coverage needs.</li>\n                    <li>Proceed with the amount in the quote and pay via bank transfer.</li>\n                    <li>Review your application details and submit them. You may receive confirmation and\n                    further instructions via email or in-app notifications.</li>\n                </ul>',
-	},
-	{
-		notificationLogId: 9996,
-		notificationMessage:
-			'<p>Dear Team,</p>\n                <p>I would like to bring to your attention an important information regarding unemployment\n                insurance. It’s mandatory to enroll in the (ILOE), also known as Unemployment Insurance\n                Scheme, in time to avoid the fine amount of AED 400/-. All employees who are residing in\n                UAE on employment visa, after processing the emirates ID are individually responsible to\n                enroll in this insurance, company will not be liable for any employee insurance or the fine\n                amount due to the overdue.</p>\n                <p>Please follow the below guideline to apply ILOE insurance through a mobile device:</p>\n                <ul>\n                    <li>Download the ILOE App from Google Play Store.</li>\n                    <li>Create an account or log in if you already have one.</li>\n                    <li>Use the app’s search feature or navigate to the insurance section to find the ILOE\n                    insurance (i.e., annual, 12 months insurance for AED 63).</li>\n                    <li>Enter the required information for a quote, such as personal details, business\n                    information, and coverage needs.</li>\n                    <li>Proceed with the amount in the quote and pay via bank transfer.</li>\n                    <li>Review your application details and submit them. You may receive confirmation and\n                    further instructions via email or in-app notifications.</li>\n                </ul>',
-	},
-];
 const NotificationsScreen = () => {
-	const [selected, setSelected] = useState(null);
-	const sheetRef = useRef<BottomSheet>(null);
-	const snapPoints = useMemo(() => ['65%'], []);
 	const {
 		isNotificationsLoading,
 		getNotifications,
-		// notifications,
+		notifications,
 		hasMore,
 		currentPage,
 	} = useNotification();
 	const colorScheme = useColorScheme();
-
-	const handleSnapPress = useCallback((item) => {
-		setSelected(item);
-		sheetRef.current?.snapToIndex(0);
-	}, []);
-
-	const closeModal = useCallback(() => {
-		sheetRef.current?.close();
-		setSelected(null);
-	}, []);
 
 	useEffect(() => {
 		getNotifications(1);
@@ -93,18 +42,29 @@ const NotificationsScreen = () => {
 		}
 	}, [isNotificationsLoading, hasMore, currentPage]);
 
-	const renderItem = ({ item, index }: { item: Notification }) => (
-		<TouchableOpacity onPress={() => handleSnapPress(item)}>
+	const renderItem = ({ item }: { item: Notification }) => (
+		<TouchableOpacity key={item.notificationLogId}>
 			<ThemedView
 				style={[
 					styles.notificationItem,
-					{ backgroundColor: colorScheme === 'dark' ? '#000' : '#eee' },
+					{ borderColor: colorScheme === 'dark' ? '#000' : '#eee' },
 				]}>
-				<ThemedText style={styles.message}>{`Notification ${
-					index + 1
-				}`}</ThemedText>
+				<View
+					style={{
+						flexDirection: 'row',
+						flex: 1,
+						justifyContent: 'space-between',
+						alignItems: 'flex-start',
+					}}>
+					<View style={{ flex: 1, paddingRight: 10 }}>
+						<ThemedText style={styles.messageTitle}>{item.subject}</ThemedText>
+					</View>
+					<ThemedText style={styles.message}>
+						{moment(item.createDate).startOf('hour').fromNow()}
+					</ThemedText>
+				</View>
 				<ThemedText style={styles.message}>
-					Click here to open notification
+					{item.notificationMessage}
 				</ThemedText>
 			</ThemedView>
 		</TouchableOpacity>
@@ -130,19 +90,6 @@ const NotificationsScreen = () => {
 		);
 	};
 
-	const renderBackdrop = useCallback(
-		(props: any) => (
-			<BottomSheetBackdrop
-				{...props}
-				disappearsOnIndex={-1}
-				appearsOnIndex={0}
-				onPress={null}
-				pressBehavior='none'
-			/>
-		),
-		[]
-	);
-
 	return (
 		<ThemedView style={styles.container}>
 			{currentPage === 1 && isNotificationsLoading ? (
@@ -159,30 +106,6 @@ const NotificationsScreen = () => {
 					contentContainerStyle={styles.listContent}
 				/>
 			)}
-			<BottomSheet
-				ref={sheetRef}
-				snapPoints={snapPoints}
-				enableDynamicSizing={false}
-				index={-1}
-				handleComponent={null}
-				backdropComponent={renderBackdrop}>
-				<View style={styles.headerContainer}>
-					<Text style={styles.headerText}>{`Hello`}</Text>
-					<TouchableOpacity
-						onPress={closeModal}
-						style={styles.closeButton}>
-						<CloseIcon color='#fff' />
-					</TouchableOpacity>
-				</View>
-				<BottomSheetScrollView
-					style={{ flex: 1 }}
-					contentContainerStyle={{ flexGrow: 1 }}>
-					<WebView
-						style={styles.titleContainer}
-						source={{ html: selected?.notificationMessage }}
-					/>
-				</BottomSheetScrollView>
-			</BottomSheet>
 		</ThemedView>
 	);
 };
@@ -190,7 +113,6 @@ const NotificationsScreen = () => {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		padding: 20,
 	},
 	titleContainer: {
 		margin: 20,
@@ -205,13 +127,19 @@ const styles = StyleSheet.create({
 	headerText: { fontWeight: '600', fontSize: 16 },
 	closeButton: { padding: 10, backgroundColor: '#000', borderRadius: 20 },
 	notificationItem: {
-		padding: 15,
+		padding: 20,
 		marginVertical: 5,
-		borderRadius: 5,
+		borderBottomWidth: 1,
+	},
+	messageTitle: {
+		fontSize: 14,
+		fontWeight: '500',
+		lineHeight: 16,
+		marginBottom: 10,
 	},
 	message: {
-		fontSize: 16,
-		fontWeight: 'bold',
+		lineHeight: 16,
+		fontSize: 12,
 	},
 	timestamp: {
 		fontSize: 12,
