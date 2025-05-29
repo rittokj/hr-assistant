@@ -9,6 +9,7 @@ import {
 	KeyboardAvoidingView,
 	Platform,
 	useColorScheme,
+	ActivityIndicator,
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { Toast } from 'toastify-react-native';
@@ -58,7 +59,7 @@ const formDataModel = [
 		type: 'date',
 	},
 	{ id: 'leaveDays', label: 'Leave Days', value: '', type: 'dynamic' },
-	{ id: 'reason', label: 'Reason', value: 'Medical', type: 'text' },
+	{ id: 'reason', label: 'Reason', value: '', type: 'text' },
 	{
 		id: 'attachment',
 		label: 'Attach Document',
@@ -79,6 +80,8 @@ export default function LeaveFormScreen() {
 	const { profileInfo } = useAuth();
 	const [formData, setFormData] = useState(formDataModel);
 	const [open, setOpen] = useState(false);
+	const [reason, setReason] = useState('');
+	const [isLoading, setIsLoading] = useState(false);
 	const [checkingAvailability, setCheckingAvailability] = useState(false);
 	const [availableLeaveCount, setAvailableLeaveCount] = useState(null);
 	const [openDatePicker, setOpenDatePicker] = useState(false);
@@ -250,6 +253,7 @@ export default function LeaveFormScreen() {
 								borderColor: '#444',
 								borderWidth: 0.5,
 							}}
+							onChangeText={(text) => setReason(text)}
 							placeholderTextColor='#999'
 							placeholder='Please enter the reason'
 						/>
@@ -304,22 +308,38 @@ export default function LeaveFormScreen() {
 			.finally(() => setCheckingAvailability(false));
 	};
 
+	const showToast = (field) => {
+		Toast.show({
+			type: 'error',
+			text1: `Please fill '${field}' field before submitting.`,
+			position: 'bottom',
+		});
+		setIsLoading(false);
+	};
+
 	const submitLeaveRequest = async () => {
+		setIsLoading(true);
 		const fromDate = formData.find((item) => item.id === 'fromDate').value;
 		const toDate = formData.find((item) => item.id === 'toDate').value;
 		const leaveType = formData.find((item) => item.id === 'leaveType').metaData;
-		const reason = formData.find((item) => item.id === 'reason').value;
 		const isHalfDay =
 			formData.find((item) => item.id === 'halfDay').value === 'Yes';
 		const leaveDays =
 			moment(toDate).diff(moment(fromDate), 'days') + (isHalfDay ? 0.5 : 1);
-
-		if (!fromDate || !toDate || !leaveType || !reason) {
-			Toast.show({
-				type: 'error',
-				text1: 'Please complete all fields before submitting.',
-				position: 'bottom',
-			});
+		if (!fromDate) {
+			showToast('From Date');
+			return;
+		}
+		if (!toDate) {
+			showToast('To Date');
+			return;
+		}
+		if (!leaveType) {
+			showToast('Leave Type');
+			return;
+		}
+		if (!reason) {
+			showToast('Reason');
 			return;
 		}
 		if (!availableLeaveCount || availableLeaveCount === 0) {
@@ -328,6 +348,7 @@ export default function LeaveFormScreen() {
 				text1: `You have used all your ${leaveType?.leaveTypeName || ''} days.`,
 				position: 'bottom',
 			});
+			setIsLoading(false);
 			return;
 		}
 
@@ -350,6 +371,7 @@ export default function LeaveFormScreen() {
 		try {
 			applyLeave(payload)
 				.then(async (res) => {
+					setIsLoading(false);
 					await getLeaveRequests({
 						offset: 0,
 						limit: 10,
@@ -366,6 +388,7 @@ export default function LeaveFormScreen() {
 					});
 				})
 				.catch((err) => {
+					setIsLoading(false);
 					Toast.show({
 						type: 'error',
 						text1: 'Submission failed',
@@ -374,6 +397,7 @@ export default function LeaveFormScreen() {
 					});
 				});
 		} catch (err) {
+			setIsLoading(false);
 			Toast.show({
 				type: 'error',
 				text1: 'Network Error',
@@ -418,10 +442,12 @@ export default function LeaveFormScreen() {
 					<View>
 						<TouchableOpacity
 							onPress={submitLeaveRequest}
+							disabled={isLoading}
 							style={styles.applyeaveButton}>
 							<ThemedText style={styles.applyeaveButtonText}>
-								Apply leave
+								Apply Leave
 							</ThemedText>
+							{isLoading ? <ActivityIndicator color='#fff' /> : null}
 						</TouchableOpacity>
 					</View>
 				</ScrollView>
@@ -458,6 +484,8 @@ const styles = StyleSheet.create({
 		backgroundColor: primaryColor,
 		justifyContent: 'center',
 		alignItems: 'center',
+		flexDirection: 'row',
+		gap: 12,
 		borderRadius: 10,
 	},
 	applyeaveButtonText: {

@@ -52,4 +52,5 @@ export const leaveRequestStatuses = {
 	1039: { stateName: 'Approved RW', color: '#343a40', textColor: '#ffffff' },
 	1040: { stateName: 'NewRW', color: '#007bff', textColor: '#ffffff' },
 	1042: { stateName: 'Rejected RW', color: '#17a2b8', textColor: '#ffffff' },
+	1054: { stateName: 'Cancelled', color: '#F77', textColor: '#FFF' },
 };

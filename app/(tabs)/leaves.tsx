@@ -4,7 +4,6 @@ import {
 	SafeAreaView,
 	FlatList,
 	Platform,
-	useColorScheme,
 	RefreshControl,
 } from 'react-native';
 
@@ -20,7 +19,6 @@ import { primaryColor } from '@/constants/Colors';
 
 export default function LeavesScreen() {
 	const backgroundColor = useThemeColor({}, 'background');
-	const colorScheme = useColorScheme();
 	const { leaveRequests, isLoading, getLeaveRequests } = useLeaves();
 	const [refreshing, setRefreshing] = useState(false);
 

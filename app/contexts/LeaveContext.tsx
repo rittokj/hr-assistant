@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { axiosInstance } from '../utils/axios';
 import { useAuth } from './AuthContext';
 import { API_URL } from '@/constants/constants';
+import { Toast } from 'toastify-react-native';
 
 type Leave = {
 	id: number;
@@ -38,6 +39,7 @@ type PaginationParams = {
 
 type LeaveContextType = {
 	isLoading: boolean;
+	isLoadingDetails: boolean;
 	isRecenteaveRequestsLoading: boolean;
 	leaveTypesList: Leave[];
 	selectedLeaveDetails: Leave;
@@ -51,6 +53,8 @@ type LeaveContextType = {
 		leaveTypeId: string
 	) => Promise<void>;
 	getLeaveRequests: (params: PaginationParams) => Promise<void>;
+	getLeaveRequestById: (id: number) => Promise<void>;
+	cancelLeaveRequestById: (id: number) => Promise<void>;
 	applyLeave: (params: PaginationParams) => Promise<void>;
 };
 
@@ -66,9 +70,10 @@ export const useLeaves = () => {
 
 export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 	const { isAuthenticated, profileInfo } = useAuth();
-	const [isRecenteaveRequestsLoading, setRecenteaveRequestsLoading] =
+	const [isRecenteaveRequestsLoading, setRecentLeaveRequestsLoading] =
 		useState(false);
 	const [isLoading, setIsLoading] = useState(false);
+	const [isLoadingDetails, setIsLoadingDetails] = useState(false);
 	const [leaveTypesList, setLeaveTypesList] = useState<Leave[]>([]);
 	const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
 	const [recentLeaveRequests, setRecentLeaveRequests] = useState<
@@ -123,9 +128,55 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 		}
 	};
 
+	const getLeaveRequestById = async (id: number) => {
+		setIsLoadingDetails(true);
+		try {
+			const response = await axiosInstance.get(
+				`${API_URL}api/LeaveRequest/Detail?id=${id}`
+			);
+
+			if (response.data.status == 200) {
+				const list = [...leaveRequests];
+				const index = list.findIndex((i) => i.employeeLeaveRequestId === id);
+				if (index > -1) list[index] = response.data.result;
+				setLeaveRequests(list);
+				handleSetSelectedLeaveRequest(response.data.result);
+			}
+		} catch (error) {
+			throw error;
+		} finally {
+			setIsLoadingDetails(false);
+		}
+	};
+
+	const cancelLeaveRequestById = (id: number) => {
+		return new Promise(async (resolve, reject) => {
+			try {
+				const response = await axiosInstance.post(
+					`${API_URL}api/LeaveRequest/CancelLeaveRequest`,
+					{
+						wfStateActionConfigId: null,
+						wfStateConfigId: null,
+						actionNotes: 'Cancelled',
+						employeeLeaveRequestId: id,
+					}
+				);
+				if (response.data.status === 200) {
+					getLeaveRequestById(id);
+					resolve(true);
+				} else
+					reject({
+						message: 'Something went wrong! Please try after sometime.',
+					});
+			} catch (error) {
+				reject(error);
+			}
+		});
+	};
+
 	const getRecentLeaveRequests = async (params: PaginationParams) => {
 		try {
-			setRecenteaveRequestsLoading(true);
+			setRecentLeaveRequestsLoading(true);
 			const response = await axiosInstance.post(
 				`${API_URL}api/LeaveRequest/GetPendingLeaveRequest`,
 				params
@@ -138,7 +189,7 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 		} catch (error) {
 			throw error;
 		} finally {
-			setRecenteaveRequestsLoading(false);
+			setRecentLeaveRequestsLoading(false);
 		}
 	};
 
@@ -152,7 +203,6 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 		} catch (error) {
 			throw error;
 		} finally {
-			setIsLoading(false);
 		}
 	};
 
@@ -186,6 +236,7 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 		<LeaveContext.Provider
 			value={{
 				isLoading,
+				isLoadingDetails,
 				isRecenteaveRequestsLoading,
 				leaveTypesList,
 				selectedLeaveDetails,
@@ -197,6 +248,8 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
 				setSelectedLeave,
 				setSelectedLeaveRequest: handleSetSelectedLeaveRequest,
 				getLeaveRequests,
+				getLeaveRequestById,
+				cancelLeaveRequestById,
 			}}>
 			{children}
 		</LeaveContext.Provider>

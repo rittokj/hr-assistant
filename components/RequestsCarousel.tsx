@@ -11,7 +11,7 @@ import Carousel from 'react-native-reanimated-carousel';
 import moment from 'moment';
 
 import AngleIcon from '@/assets/svgs/Angle';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 import { ThemedText } from './ThemedText';
 import { useLeaves } from '@/app/contexts/LeaveContext';
 
@@ -40,12 +40,20 @@ function RequestsCarousel() {
 }
 
 function RequestsCarouselItem({ item }: { item: string }) {
+	const router = useRouter();
 	const colorScheme = useColorScheme();
 	const fromDate = moment(item?.fromDateText, 'DD/MM/YYYY');
 	const toDate = moment(item?.toDateText, 'DD/MM/YYYY');
 	const formattedRange = `${fromDate.format('D MMMM')} to ${toDate.format(
 		'D MMMM'
 	)}`;
+
+	const onPressItem = () => {
+		router.push({
+			pathname: '/request-details',
+			params: { leaveRequestId: item.employeeLeaveRequestId },
+		});
+	};
 
 	return (
 		<View
@@ -84,10 +92,8 @@ function RequestsCarouselItem({ item }: { item: string }) {
 						</ThemedText>
 					</View>
 				</View>
-				<TouchableOpacity>
-					<Link href='/request-details'>
-						<AngleIcon color={colorScheme === 'dark' ? '#FFF' : '#171717'} />
-					</Link>
+				<TouchableOpacity onPress={onPressItem}>
+					<AngleIcon color={colorScheme === 'dark' ? '#FFF' : '#171717'} />
 				</TouchableOpacity>
 			</View>
 		</View>
