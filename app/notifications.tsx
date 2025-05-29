@@ -61,12 +61,12 @@ const NotificationsScreen = () => {
 					params: { warningId: item.sourceId },
 				});
 				break;
-			case PUSH_NOTIFICATION_TYPES.Lead_Source_Type:
-				router.push({
-					pathname: '/(tabs)/my-profile',
-					params: { leadId: item.sourceId },
-				});
-				break;
+			// case PUSH_NOTIFICATION_TYPES.Lead_Source_Type:
+			// 	router.push({
+			// 		pathname: '/(tabs)/my-profile',
+			// 		params: { leadId: item.sourceId },
+			// 	});
+			// 	break;
 			case PUSH_NOTIFICATION_TYPES.HR_LeaveRequest_Source_Type:
 				router.push({
 					pathname: '/request-details',
@@ -79,15 +79,15 @@ const NotificationsScreen = () => {
 					params: { payslipId: item.sourceId },
 				});
 				break;
-			case PUSH_NOTIFICATION_TYPES.HR_EmployeeRequest_Source_Type:
-				router.push({
-					pathname: '/(tabs)/my-profile',
-					params: { employeeRequestId: item.sourceId },
-				});
-				break;
+			// case PUSH_NOTIFICATION_TYPES.HR_EmployeeRequest_Source_Type:
+			// 	router.push({
+			// 		pathname: '/(tabs)/my-profile',
+			// 		params: { employeeRequestId: item.sourceId },
+			// 	});
+			// 	break;
 			case PUSH_NOTIFICATION_TYPES.HR_AdditionalLeaveRequest_Source_Type:
 				router.push({
-					pathname: '/(tabs)/leaves',
+					pathname: '/request-details',
 					params: { leaveRequestId: item.sourceId },
 				});
 				break;

@@ -14,10 +14,7 @@ import {
 import moment from 'moment';
 import { useRef, useState, useCallback, useEffect, useMemo } from 'react';
 import { WebView } from 'react-native-webview';
-import BottomSheet, {
-	BottomSheetBackdrop,
-	BottomSheetScrollView,
-} from '@gorhom/bottom-sheet';
+import BottomSheet, { BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -29,6 +26,7 @@ import { API_URL } from '@/constants/constants';
 import { primaryColor } from '@/constants/Colors';
 import AngleIcon from '@/assets/svgs/Angle';
 import CloseIcon from '@/assets/svgs/Close';
+import { useLocalSearchParams } from 'expo-router';
 
 type MenuItem = {
 	id: string;
@@ -48,24 +46,36 @@ type ProfileSection = {
 
 export default function ProfileScreen() {
 	const colorScheme = useColorScheme();
-	const [selected, setSelected] = useState('');
+	const { memoId, warningId, employeeRequestId } = useLocalSearchParams();
 	const [opened, setOpened] = useState<string[]>([]);
 	const [refreshing, setRefreshing] = useState(false);
 	const [webViewTest, setWebViewTest] = useState<any>(null);
 	const sheetRef = useRef<BottomSheet>(null);
+	const scrollViewRef = useRef(null);
+	const itemHeights = useRef({});
 	const snapPoints = useMemo(() => ['65%'], []);
 	const { profileInfo, logout, tokens, getProfileInfo } = useAuth();
 	const { memos, warnings, fetchMemos, fetchWarnings } = useProfile();
 	const animationValues = useRef<Record<string, Animated.Value>>({}).current;
-	const [showLogoutSheet, setShowLogoutSheet] = useState(false);
 	const logoutSheetRef = useRef<BottomSheet>(null);
 
 	const handleSnapPress = (text: any, title: any) => {
-		console.log(title);
 		setWebViewTest({ text, title });
 		setTimeout(() => {
 			sheetRef.current?.snapToIndex(0);
 		}, 600);
+	};
+
+	const scrollToItem = (index) => {
+		const y = Object.values(itemHeights.current)
+			.slice(0, index)
+			.reduce((acc, cur) => acc + cur, 0);
+
+		scrollViewRef.current?.scrollTo({ x: 0, y: y, animated: true });
+	};
+
+	const handleLayout = (event, index) => {
+		itemHeights.current[index] = event.nativeEvent.layout.height;
 	};
 
 	const closeModal = () => {
@@ -74,7 +84,6 @@ export default function ProfileScreen() {
 	};
 
 	const handleLogoutPress = () => {
-		setShowLogoutSheet(true);
 		setTimeout(() => {
 			logoutSheetRef.current?.snapToIndex(0);
 		}, 100);
@@ -82,7 +91,6 @@ export default function ProfileScreen() {
 
 	const closeLogoutSheet = () => {
 		logoutSheetRef.current?.close();
-		setShowLogoutSheet(false);
 	};
 
 	const renderBackdrop = useCallback(
@@ -113,11 +121,27 @@ export default function ProfileScreen() {
 		} finally {
 			setRefreshing(false);
 		}
-	}, [tokens.employeeId, getProfileInfo, fetchMemos, fetchWarnings]);
+	}, [tokens.employeeId]);
+
+	const handleOpenAndScroll = (id, index) => {
+		toggleSection(id);
+		setTimeout(() => {
+			scrollToItem(index);
+		}, 600);
+	};
+
+	const initialFetch = async () => {
+		await Promise.all([fetchMemos(), fetchWarnings()]);
+		if (memoId) {
+			handleOpenAndScroll('Memo', 7);
+		}
+		if (warningId) {
+			handleOpenAndScroll('Warning', 6);
+		}
+	};
 
 	useEffect(() => {
-		fetchMemos();
-		fetchWarnings();
+		initialFetch();
 	}, [profileInfo?.employeeID]);
 
 	const profileInfoList: ProfileSection[] = [
@@ -248,7 +272,6 @@ export default function ProfileScreen() {
 			list.push(id);
 		}
 		const isOpen = currentIndex !== -1;
-		setSelected(isOpen ? '' : id);
 		if (!animationValues[id]) {
 			animationValues[id] = new Animated.Value(isOpen ? 0 : 1);
 		}
@@ -286,6 +309,7 @@ export default function ProfileScreen() {
 					</ThemedText>
 				</View>
 				<ScrollView
+					ref={scrollViewRef}
 					refreshControl={
 						<RefreshControl
 							refreshing={refreshing}
@@ -303,7 +327,8 @@ export default function ProfileScreen() {
 						style={[
 							styles.imageWrapper,
 							{ borderColor: colorScheme === 'dark' ? '#373737' : '#ECE9F2' },
-						]}>
+						]}
+						onLayout={(event) => handleLayout(event, 0)}>
 						{profileInfo?.profileImagePath ? (
 							<Image
 								source={{
@@ -334,155 +359,153 @@ export default function ProfileScreen() {
 							</ThemedText>
 						</View>
 					</View>
-					<View style={styles.linksWrapper}>
-						{profileInfoList.map((item) => {
-							if (!animationValues[item.id]) {
-								animationValues[item.id] = new Animated.Value(0);
-							}
-							const animatedHeight = animationValues[item.id].interpolate({
-								inputRange: [0, 1],
-								outputRange: [0, (item.list.length || 1) * item.size],
-							});
-							const animatedOpacity = animationValues[item.id].interpolate({
-								inputRange: [0, 1],
-								outputRange: [0, 1],
-							});
+					{profileInfoList.map((item, index) => {
+						if (!animationValues[item.id]) {
+							animationValues[item.id] = new Animated.Value(0);
+						}
+						const animatedHeight = animationValues[item.id].interpolate({
+							inputRange: [0, 1],
+							outputRange: [0, (item.list.length || 1) * item.size],
+						});
+						const animatedOpacity = animationValues[item.id].interpolate({
+							inputRange: [0, 1],
+							outputRange: [0, 1],
+						});
 
-							return (
-								<View key={item.id}>
-									<TouchableOpacity
-										onPress={() => toggleSection(item.id)}
+						return (
+							<View
+								key={item.id}
+								onLayout={(event) => handleLayout(event, index + 1)}>
+								<TouchableOpacity
+									onPress={() => toggleSection(item.id)}
+									style={[
+										styles.linksItem,
+										{
+											backgroundColor:
+												colorScheme === 'dark' ? '#373737' : '#ECE9F2',
+										},
+									]}>
+									<ThemedText
+										style={{ fontSize: 12, fontWeight: '500' }}
+										lightColor='#171717'
+										darkColor='#ccc'>
+										{item.label}
+									</ThemedText>
+									<View
+										style={{
+											transform: [
+												{
+													rotate:
+														opened.findIndex((i) => i === item.id) > -1
+															? '90deg'
+															: '0deg',
+												},
+											],
+										}}>
+										<AngleRightIcon
+											color={colorScheme === 'dark' ? '#ccc' : '#171717'}
+										/>
+									</View>
+								</TouchableOpacity>
+								<Animated.View
+									style={{
+										height: animatedHeight,
+										opacity: animatedOpacity,
+										overflow: 'hidden',
+									}}>
+									<View
 										style={[
-											styles.linksItem,
+											styles.detailsWrapper,
 											{
-												backgroundColor:
+												borderColor:
 													colorScheme === 'dark' ? '#373737' : '#ECE9F2',
 											},
 										]}>
-										<ThemedText
-											style={{ fontSize: 12, fontWeight: '500' }}
-											lightColor='#171717'
-											darkColor='#ccc'>
-											{item.label}
-										</ThemedText>
-										<View
-											style={{
-												transform: [
-													{
-														rotate:
-															opened.findIndex((i) => i === item.id) > -1
-																? '90deg'
-																: '0deg',
-													},
-												],
-											}}>
-											<AngleRightIcon
-												color={colorScheme === 'dark' ? '#ccc' : '#171717'}
-											/>
-										</View>
-									</TouchableOpacity>
-									<Animated.View
-										style={{
-											height: animatedHeight,
-											opacity: animatedOpacity,
-											overflow: 'hidden',
-										}}>
-										<View
-											style={[
-												styles.detailsWrapper,
-												{
-													borderColor:
-														colorScheme === 'dark' ? '#373737' : '#ECE9F2',
-												},
-											]}>
-											{item?.list?.length ? (
-												item.list.map((menuItem, index) => {
-													const Wrapper = menuItem?.openable
-														? TouchableOpacity
-														: View;
-													return (
-														<Wrapper
-															key={menuItem.id}
-															onPress={() => {
-																if (item.id === 'Memo' && menuItem.memo) {
-																	handleSnapPress(
-																		menuItem.memo?.memoDTO?.memoText,
-																		menuItem.memo?.memoDTO?.subject
-																	);
-																}
-																if (item.id === 'Warning') {
-																	handleSnapPress(menuItem.label, menuItem.id);
-																}
-															}}
-															style={[
-																styles.detailsItem,
-																{
-																	borderBottomWidth:
-																		item?.list?.length - 1 === index ? 0 : 1,
-																	borderBottomColor:
-																		colorScheme === 'dark'
-																			? '#373737'
-																			: '#ECE9F2',
-																	alignItems: menuItem?.openable
-																		? 'center'
-																		: 'flex-start',
-																},
-															]}>
+										{item?.list?.length ? (
+											item.list.map((menuItem, index) => {
+												const Wrapper = menuItem?.openable
+													? TouchableOpacity
+													: View;
+												return (
+													<Wrapper
+														key={menuItem.id}
+														onPress={() => {
+															if (item.id === 'Memo' && menuItem.memo) {
+																handleSnapPress(
+																	menuItem.memo?.memoDTO?.memoText,
+																	menuItem.memo?.memoDTO?.subject
+																);
+															}
+															if (item.id === 'Warning') {
+																handleSnapPress(menuItem.label, menuItem.id);
+															}
+														}}
+														style={[
+															styles.detailsItem,
+															{
+																borderBottomWidth:
+																	item?.list?.length - 1 === index ? 0 : 1,
+																borderBottomColor:
+																	colorScheme === 'dark'
+																		? '#373737'
+																		: '#ECE9F2',
+																alignItems: menuItem?.openable
+																	? 'center'
+																	: 'flex-start',
+															},
+														]}>
+														<ThemedText
+															style={{
+																flex: 1,
+																fontSize: 12,
+																paddingRight: menuItem?.openable ? 20 : 0,
+															}}>
+															{menuItem.label}
+														</ThemedText>
+														{menuItem?.openable ? (
+															<TouchableOpacity style={styles.iconContainer}>
+																<View style={styles.iconWrapper}>
+																	<AngleIcon color='#fff' />
+																</View>
+															</TouchableOpacity>
+														) : (
 															<ThemedText
-																style={{
-																	flex: 1,
-																	fontSize: 12,
-																	paddingRight: menuItem?.openable ? 20 : 0,
-																}}>
-																{menuItem.label}
+																style={{ fontSize: 12, fontWeight: '500' }}>
+																{menuItem?.type === 'date'
+																	? moment(menuItem.value).format('DD MMM YYYY')
+																	: menuItem.value}
 															</ThemedText>
-															{menuItem?.openable ? (
-																<TouchableOpacity style={styles.iconContainer}>
-																	<View style={styles.iconWrapper}>
-																		<AngleIcon color='#fff' />
-																	</View>
-																</TouchableOpacity>
-															) : (
-																<ThemedText
-																	style={{ fontSize: 12, fontWeight: '500' }}>
-																	{menuItem?.type === 'date'
-																		? moment(menuItem.value).format(
-																				'DD MMM YYYY'
-																		  )
-																		: menuItem.value}
-																</ThemedText>
-															)}
-														</Wrapper>
-													);
-												})
-											) : (
-												<View style={[styles.detailsItem]}>
-													<ThemedText
-														style={{
-															color: '#999',
-															textAlign: 'center',
-															flex: 1,
-															fontSize: 12,
-															fontWeight: '500',
-														}}>
-														{`${item.label} not available`}
-													</ThemedText>
-												</View>
-											)}
-										</View>
-									</Animated.View>
-								</View>
-							);
-						})}
-						<TouchableOpacity
-							onPress={handleLogoutPress}
-							style={[styles.linksItem, { backgroundColor: '#FF3B30' }]}>
-							<ThemedText
-								style={{ color: '#fff', fontSize: 12, fontWeight: '500' }}>
-								Logout
-							</ThemedText>
-						</TouchableOpacity>
-					</View>
+														)}
+													</Wrapper>
+												);
+											})
+										) : (
+											<View style={[styles.detailsItem]}>
+												<ThemedText
+													style={{
+														color: '#999',
+														textAlign: 'center',
+														flex: 1,
+														fontSize: 12,
+														fontWeight: '500',
+													}}>
+													{`${item.label} not available`}
+												</ThemedText>
+											</View>
+										)}
+									</View>
+								</Animated.View>
+							</View>
+						);
+					})}
+					<TouchableOpacity
+						onPress={handleLogoutPress}
+						style={[styles.linksItem, { backgroundColor: '#FF3B30' }]}>
+						<ThemedText
+							style={{ color: '#fff', fontSize: 12, fontWeight: '500' }}>
+							Logout
+						</ThemedText>
+					</TouchableOpacity>
 				</ScrollView>
 			</ThemedView>
 			<BottomSheet
@@ -615,7 +638,6 @@ const styles = StyleSheet.create({
 		right: 0,
 		padding: 20,
 	},
-	linksWrapper: {},
 	linksItem: {
 		width: '100%',
 		justifyContent: 'space-between',
