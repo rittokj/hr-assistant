@@ -8,21 +8,26 @@ import {
 	TouchableOpacity,
 } from 'react-native';
 import moment from 'moment';
+import { useRouter } from 'expo-router';
 
 import NotificationLoader from '@/components/NotificationLoader';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { primaryColor } from '@/constants/Colors';
 import { useNotification } from './contexts/NotificationContext';
+import { PUSH_NOTIFICATION_TYPES } from '@/constants/pushNotificationTypes';
 
 interface Notification {
 	notificationLogId: number;
 	subject: string;
 	notificationMessage: string;
 	createDate: string;
+	sourceTypeCd: number;
+	sourceId: number;
 }
 
 const NotificationsScreen = () => {
+	const router = useRouter();
 	const {
 		isNotificationsLoading,
 		getNotifications,
@@ -42,33 +47,86 @@ const NotificationsScreen = () => {
 		}
 	}, [isNotificationsLoading, hasMore, currentPage]);
 
-	const renderItem = ({ item }: { item: Notification }) => (
-		<TouchableOpacity key={item.notificationLogId}>
-			<ThemedView
-				style={[
-					styles.notificationItem,
-					{ borderColor: colorScheme === 'dark' ? '#000' : '#eee' },
-				]}>
-				<View
-					style={{
-						flexDirection: 'row',
-						flex: 1,
-						justifyContent: 'space-between',
-						alignItems: 'flex-start',
-					}}>
-					<View style={{ flex: 1, paddingRight: 10 }}>
-						<ThemedText style={styles.messageTitle}>{item.subject}</ThemedText>
+	const onPressNotification = (item: Notification) => {
+		switch (item.sourceTypeCd) {
+			case PUSH_NOTIFICATION_TYPES.HR_Memo_Source_Type:
+				router.push({
+					pathname: '/(tabs)/my-profile',
+					params: { memoId: item.sourceId },
+				});
+				break;
+			case PUSH_NOTIFICATION_TYPES.HR_Warning_Source_Type:
+				router.push({
+					pathname: '/(tabs)/my-profile',
+					params: { warningId: item.sourceId },
+				});
+				break;
+			case PUSH_NOTIFICATION_TYPES.Lead_Source_Type:
+				router.push({
+					pathname: '/(tabs)/my-profile',
+					params: { leadId: item.sourceId },
+				});
+				break;
+			case PUSH_NOTIFICATION_TYPES.HR_LeaveRequest_Source_Type:
+				router.push({
+					pathname: '/request-details',
+					params: { leaveRequestId: item.sourceId },
+				});
+				break;
+			case PUSH_NOTIFICATION_TYPES.HR_Payslip_Source_Type:
+				router.push({
+					pathname: '/(tabs)/pay-slip',
+					params: { payslipId: item.sourceId },
+				});
+				break;
+			case PUSH_NOTIFICATION_TYPES.HR_EmployeeRequest_Source_Type:
+				router.push({
+					pathname: '/(tabs)/my-profile',
+					params: { employeeRequestId: item.sourceId },
+				});
+				break;
+			case PUSH_NOTIFICATION_TYPES.HR_AdditionalLeaveRequest_Source_Type:
+				router.push({
+					pathname: '/(tabs)/leaves',
+					params: { leaveRequestId: item.sourceId },
+				});
+				break;
+		}
+	};
+
+	const renderItem = ({ item }: { item: Notification }) => {
+		return (
+			<TouchableOpacity
+				key={item.notificationLogId}
+				onPress={() => onPressNotification(item)}>
+				<ThemedView
+					style={[
+						styles.notificationItem,
+						{ borderColor: colorScheme === 'dark' ? '#000' : '#eee' },
+					]}>
+					<View
+						style={{
+							flexDirection: 'row',
+							flex: 1,
+							justifyContent: 'space-between',
+							alignItems: 'flex-start',
+						}}>
+						<View style={{ flex: 1, paddingRight: 10 }}>
+							<ThemedText style={styles.messageTitle}>
+								{item.subject}
+							</ThemedText>
+						</View>
+						<ThemedText style={styles.message}>
+							{moment(item.createDate).startOf('hour').fromNow()}
+						</ThemedText>
 					</View>
 					<ThemedText style={styles.message}>
-						{moment(item.createDate).startOf('hour').fromNow()}
+						{item.notificationMessage}
 					</ThemedText>
-				</View>
-				<ThemedText style={styles.message}>
-					{item.notificationMessage}
-				</ThemedText>
-			</ThemedView>
-		</TouchableOpacity>
-	);
+				</ThemedView>
+			</TouchableOpacity>
+		);
+	};
 
 	const renderEmptyState = () => (
 		<View style={styles.emptyState}>

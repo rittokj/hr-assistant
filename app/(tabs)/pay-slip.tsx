@@ -15,8 +15,10 @@ import PaySlipLoader from '@/components/PaySlipLoader';
 import { useEffect, useState } from 'react';
 import { usePayslip } from '../contexts/PayslipContext';
 import { primaryColor } from '@/constants/Colors';
+import { useLocalSearchParams } from 'expo-router';
 
 export default function PaySlipScreen() {
+	const { payslipId } = useLocalSearchParams();
 	const colorScheme = useColorScheme();
 	const { payslips, fetchPayslips } = usePayslip();
 	const [open, setOpen] = useState('');
@@ -29,12 +31,14 @@ export default function PaySlipScreen() {
 		setRefreshing(false);
 	};
 
+	const loadData = async () => {
+		setLoading(true);
+		await fetchPayslips();
+		if (payslipId) setOpen(payslipId);
+		setLoading(false);
+	};
+
 	useEffect(() => {
-		const loadData = async () => {
-			setLoading(true);
-			await fetchPayslips();
-			setLoading(false);
-		};
 		loadData();
 	}, []);
 
