@@ -12,12 +12,14 @@ import {
   ActivityIndicator,
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
+import * as FileSystem from "expo-file-system";
 import { Toast } from "toastify-react-native";
 
 import SmallAngleIcon from "@/assets/svgs/SmallAngle";
 import BottomSheetSelecter from "@/components/BottomSheetSelecter";
 import RNDateTimePicker from "@react-native-community/datetimepicker";
 import PlusIcon from "@/assets/svgs/Plus";
+import CloseIcon from "@/assets/svgs/Close";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedTextInput } from "@/components/ThemedTextInput";
 import { useLeaves } from "./contexts/LeaveContext";
@@ -85,9 +87,66 @@ export default function LeaveFormScreen() {
   const [checkingAvailability, setCheckingAvailability] = useState(false);
   const [availableLeaveCount, setAvailableLeaveCount] = useState(null);
   const [openDatePicker, setOpenDatePicker] = useState(false);
+  const [pickedDocument, setPickedDocument] =
+    useState<DocumentPicker.DocumentPickerResult | null>(null);
 
-  const getDocument = () => {
-    DocumentPicker.getDocumentAsync((res) => {});
+  const getDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["application/pdf", "image/*"],
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled) {
+        setPickedDocument(result);
+        const updatedFormData = formData.map((data) => {
+          if (data.id === "attachment") {
+            return { ...data, value: result.assets[0].name };
+          }
+          return data;
+        });
+        setFormData(updatedFormData);
+      }
+    } catch (err) {
+      console.error("Error picking document:", err);
+      Toast.show({
+        type: "error",
+        text1: "Failed to pick document",
+        position: "bottom",
+      });
+    }
+  };
+
+  const removeDocument = () => {
+    setPickedDocument(null);
+    const updatedFormData = formData.map((data) => {
+      if (data.id === "attachment") {
+        return { ...data, value: "" };
+      }
+      return data;
+    });
+    setFormData(updatedFormData);
+  };
+
+  const convertToBase64 = async (uri: string): Promise<string> => {
+    try {
+      const fileInfo = await FileSystem.getInfoAsync(uri);
+      if (!fileInfo.exists) {
+        throw new Error("File does not exist");
+      }
+
+      const base64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+        length: fileInfo.size,
+      });
+
+      if (!base64) {
+        throw new Error("Failed to read file content");
+      }
+      return base64;
+    } catch (error) {
+      throw error;
+    }
   };
 
   const renderTypes = (item: FormItem) => {
@@ -261,14 +320,39 @@ export default function LeaveFormScreen() {
         );
       case "attachment":
         return (
-          <TouchableOpacity
-            onPress={getDocument}
-            style={{ flexDirection: "row", alignItems: "center" }}>
-            <ThemedText style={{ fontSize: 14, marginRight: 10 }}>
-              {item.value}
-            </ThemedText>
-            <PlusIcon />
-          </TouchableOpacity>
+          <View>
+            {pickedDocument && !pickedDocument.canceled ? (
+              <View
+                style={{
+                  flexDirection: "row",
+                  width: "100%",
+                  alignItems: "center",
+                }}>
+                <ThemedText
+                  ellipsizeMode='tail'
+                  numberOfLines={1}
+                  style={{
+                    fontSize: 14,
+                    width: 150,
+                    marginRight: 10,
+                  }}>
+                  {item.value}
+                </ThemedText>
+
+                <TouchableOpacity
+                  onPress={removeDocument}
+                  style={{ marginLeft: 5 }}>
+                  <CloseIcon />
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <TouchableOpacity
+                onPress={getDocument}
+                style={{ flexDirection: "row", alignItems: "center" }}>
+                <PlusIcon />
+              </TouchableOpacity>
+            )}
+          </View>
         );
       default:
         return (
@@ -319,11 +403,13 @@ export default function LeaveFormScreen() {
 
   const submitLeaveRequest = async () => {
     setIsLoading(true);
-    const fromDate = formData.find((item) => item.id === "fromDate").value;
-    const toDate = formData.find((item) => item.id === "toDate").value;
-    const leaveType = formData.find((item) => item.id === "leaveType").metaData;
+    const fromDate = formData.find((item) => item.id === "fromDate")?.value;
+    const toDate = formData.find((item) => item.id === "toDate")?.value;
+    const leaveType = formData.find(
+      (item) => item.id === "leaveType"
+    )?.metaData;
     const isHalfDay =
-      formData.find((item) => item.id === "halfDay").value === "Yes";
+      formData.find((item) => item.id === "halfDay")?.value === "Yes";
     const leaveDays =
       moment(toDate).diff(moment(fromDate), "days") + (isHalfDay ? 0.5 : 1);
     if (!fromDate) {
@@ -352,22 +438,39 @@ export default function LeaveFormScreen() {
       return;
     }
 
+    let attachmentBase64 = null;
+    if (pickedDocument && !pickedDocument.canceled) {
+      try {
+        attachmentBase64 = await convertToBase64(pickedDocument.assets[0].uri);
+      } catch (error) {
+        Toast.show({
+          type: "error",
+          text1: "Failed to process attachment",
+          position: "bottom",
+        });
+        setIsLoading(false);
+        return;
+      }
+    }
+
     const payload = {
       EmployeeLeaveRequestId: 0,
-      EmployeeId: profileInfo.employeeID,
+      EmployeeId: profileInfo?.employeeID,
       LeaveTypeId: leaveType.leaveTypeId,
-      LeaveFromDate: moment(fromDate).format(),
-      LeaveToDate: moment(toDate).format(),
+      LeaveFromDate: moment(fromDate).format("YYYY-MM-DDTHH:mm:ss"),
+      LeaveToDate: moment(toDate).format("YYYY-MM-DDTHH:mm:ss"),
       Reason: reason,
       IsDeleted: false,
-      EmployeeName: profileInfo.employeeName,
-      TransDate: moment().format(),
+      EmployeeName: profileInfo?.employeeName,
+      TransDate: moment().format("YYYY-MM-DDTHH:mm:ss"),
       TransNo: `TX${Date.now()}`,
       LeaveDays: leaveDays,
       IsHalfDay: isHalfDay,
-      WfstateConfigId: 3,
       ActionNotes: "Submitted",
+      fileName: pickedDocument?.assets?.[0]?.name || null,
+      fileBytes: attachmentBase64 || null,
     };
+
     try {
       applyLeave(payload)
         .then(async (res) => {

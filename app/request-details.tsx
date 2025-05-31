@@ -94,7 +94,7 @@ export default function LeaveFormScreen() {
       {
         id: "attachment",
         label: "Attach Document",
-        value: "",
+        value: selectedLeaveRequest?.fileName || "",
         type: "attachment",
       },
     ],
