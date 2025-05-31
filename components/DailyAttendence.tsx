@@ -34,26 +34,22 @@ function DailyAttendence({ attendance }: any) {
           backgroundColor: colorScheme === "dark" ? "#171717" : "#fff",
           borderBottomWidth: 1,
         },
-      ]}
-    >
+      ]}>
       <View
         style={{
           flexDirection: "row",
-        }}
-      >
+        }}>
         <View
           style={{
             flexDirection: "row",
-          }}
-        >
+          }}>
           <View
             style={[
               styles.circleWrapper,
               {
                 backgroundColor: dateBgColor,
               },
-            ]}
-          >
+            ]}>
             <ThemedText style={{ color: dateTextColor, fontSize: 14 }}>
               {moment(attendance.attDate).format("DD")}
             </ThemedText>
@@ -62,14 +58,14 @@ function DailyAttendence({ attendance }: any) {
             <View
               style={{
                 minWidth: 85,
-              }}
-            >
+              }}>
               <ThemedText style={styles.smallText}>
                 {moment(attendance.attDate).format("dddd")}
               </ThemedText>
               <ThemedText
-                style={styles.text}
-              >{`${attendance.totalHour} hours`}</ThemedText>
+                style={
+                  styles.text
+                }>{`${attendance.totalHour} hours`}</ThemedText>
             </View>
           </View>
         </View>
@@ -79,8 +75,7 @@ function DailyAttendence({ attendance }: any) {
             flex: 1,
             alignItems: "flex-start",
             justifyContent: "space-between",
-          }}
-        >
+          }}>
           <View style={styles.attendanceSection}>
             <View
               style={[
@@ -89,8 +84,7 @@ function DailyAttendence({ attendance }: any) {
                   backgroundColor:
                     colorScheme === "dark" ? "#272727" : "#E6F2FF",
                 },
-              ]}
-            >
+              ]}>
               <ArrowRightIcon color={primaryColor} />
             </View>
             <View>
@@ -110,8 +104,7 @@ function DailyAttendence({ attendance }: any) {
                   backgroundColor:
                     colorScheme === "dark" ? "#272727" : "#E6F2FF",
                 },
-              ]}
-            >
+              ]}>
               <ArrowLeftIcon color={primaryColor} />
             </View>
             <View>
