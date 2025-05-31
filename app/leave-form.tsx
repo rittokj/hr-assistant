@@ -9,6 +9,7 @@ import {
 	KeyboardAvoidingView,
 	Platform,
 	useColorScheme,
+	ActivityIndicator,
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { Toast } from 'toastify-react-native';
@@ -58,7 +59,7 @@ const formDataModel = [
 		type: 'date',
 	},
 	{ id: 'leaveDays', label: 'Leave Days', value: '', type: 'dynamic' },
-	{ id: 'reason', label: 'Reason', value: 'Medical', type: 'text' },
+	{ id: 'reason', label: 'Reason', value: '', type: 'text' },
 	{
 		id: 'attachment',
 		label: 'Attach Document',
@@ -79,7 +80,10 @@ export default function LeaveFormScreen() {
 	const { profileInfo } = useAuth();
 	const [formData, setFormData] = useState(formDataModel);
 	const [open, setOpen] = useState(false);
+	const [reason, setReason] = useState('');
+	const [isLoading, setIsLoading] = useState(false);
 	const [checkingAvailability, setCheckingAvailability] = useState(false);
+	const [availableLeaveCount, setAvailableLeaveCount] = useState(null);
 	const [openDatePicker, setOpenDatePicker] = useState(false);
 
 	const getDocument = () => {
@@ -98,14 +102,29 @@ export default function LeaveFormScreen() {
 				);
 			case 'dropdown':
 				return (
-					<TouchableOpacity
-						onPress={() => setOpen(true)}
-						style={{ flexDirection: 'row', alignItems: 'center' }}>
-						<ThemedText
-							style={{ fontSize: 14, textAlign: 'right', marginRight: 5 }}>
-							{item.value}
-						</ThemedText>
-						<SmallAngleIcon color={colorScheme === 'dark' ? '#fff' : '#000'} />
+					<TouchableOpacity onPress={() => setOpen(true)}>
+						<View style={{ flexDirection: 'row', alignItems: 'center' }}>
+							<ThemedText
+								style={{ fontSize: 14, textAlign: 'right', marginRight: 5 }}>
+								{item.value}
+							</ThemedText>
+							<SmallAngleIcon
+								color={colorScheme === 'dark' ? '#fff' : '#000'}
+							/>
+						</View>
+						{item.value ? (
+							<ThemedText
+								style={{
+									fontSize: 12,
+									textAlign: 'right',
+									marginRight: 5,
+									color: '#999',
+								}}>{`Available: ${
+								availableLeaveCount || availableLeaveCount === 0
+									? availableLeaveCount
+									: '...'
+							}`}</ThemedText>
+						) : null}
 					</TouchableOpacity>
 				);
 			case 'toggle':
@@ -227,11 +246,16 @@ export default function LeaveFormScreen() {
 						<ThemedTextInput
 							multiline
 							style={{
-								width: 240,
+								width: '100%',
 								height: 80,
 								borderRadius: 5,
-								padding: 10,
+								paddingHorizontal: 10,
+								borderColor: '#444',
+								borderWidth: 0.5,
 							}}
+							onChangeText={(text) => setReason(text)}
+							placeholderTextColor='#999'
+							placeholder='Please enter the reason'
 						/>
 					</View>
 				);
@@ -259,44 +283,72 @@ export default function LeaveFormScreen() {
 
 	const toggleLeave = (leave) => {
 		setCheckingAvailability(true);
+		setAvailableLeaveCount(null);
 		checkLeaveAvailability(profileInfo.employeeID, leave.leaveTypeId)
 			.then((res) => {
-				if (res.data.result.allocatedCount === 0) {
+				const { result } = res.data;
+				const availableLeave = result.allocatedCount - result.reservedCount;
+				setAvailableLeaveCount(availableLeave);
+				if (!availableLeave) {
 					Toast.show({
 						type: 'error',
 						text1: `You have used all your ${leave.leaveTypeName || ''} days.`,
 						position: 'bottom',
 						visibilityTime: 8000,
 					});
-				} else {
-					const updatedFormData = formData.map((data) => {
-						if (data.id === 'leaveType') {
-							return { ...data, value: leave.leaveTypeName, metaData: leave };
-						}
-						return data;
-					});
-					setFormData(updatedFormData);
 				}
+				const updatedFormData = formData.map((data) => {
+					if (data.id === 'leaveType') {
+						return { ...data, value: leave.leaveTypeName, metaData: leave };
+					}
+					return data;
+				});
+				setFormData(updatedFormData);
 			})
 			.finally(() => setCheckingAvailability(false));
 	};
 
+	const showToast = (field) => {
+		Toast.show({
+			type: 'error',
+			text1: `Please fill '${field}' field before submitting.`,
+			position: 'bottom',
+		});
+		setIsLoading(false);
+	};
+
 	const submitLeaveRequest = async () => {
+		setIsLoading(true);
 		const fromDate = formData.find((item) => item.id === 'fromDate').value;
 		const toDate = formData.find((item) => item.id === 'toDate').value;
 		const leaveType = formData.find((item) => item.id === 'leaveType').metaData;
-		const reason = formData.find((item) => item.id === 'reason').value;
 		const isHalfDay =
 			formData.find((item) => item.id === 'halfDay').value === 'Yes';
 		const leaveDays =
 			moment(toDate).diff(moment(fromDate), 'days') + (isHalfDay ? 0.5 : 1);
-
-		if (!fromDate || !toDate || !leaveType || !reason) {
+		if (!fromDate) {
+			showToast('From Date');
+			return;
+		}
+		if (!toDate) {
+			showToast('To Date');
+			return;
+		}
+		if (!leaveType) {
+			showToast('Leave Type');
+			return;
+		}
+		if (!reason) {
+			showToast('Reason');
+			return;
+		}
+		if (!availableLeaveCount || availableLeaveCount === 0) {
 			Toast.show({
 				type: 'error',
-				text1: 'Please complete all fields before submitting.',
+				text1: `You have used all your ${leaveType?.leaveTypeName || ''} days.`,
 				position: 'bottom',
 			});
+			setIsLoading(false);
 			return;
 		}
 
@@ -319,6 +371,7 @@ export default function LeaveFormScreen() {
 		try {
 			applyLeave(payload)
 				.then(async (res) => {
+					setIsLoading(false);
 					await getLeaveRequests({
 						offset: 0,
 						limit: 10,
@@ -335,6 +388,7 @@ export default function LeaveFormScreen() {
 					});
 				})
 				.catch((err) => {
+					setIsLoading(false);
 					Toast.show({
 						type: 'error',
 						text1: 'Submission failed',
@@ -343,6 +397,7 @@ export default function LeaveFormScreen() {
 					});
 				});
 		} catch (err) {
+			setIsLoading(false);
 			Toast.show({
 				type: 'error',
 				text1: 'Network Error',
@@ -364,9 +419,19 @@ export default function LeaveFormScreen() {
 					{formData.map((item) => (
 						<View
 							key={item.id}
-							style={styles.container}>
+							style={[
+								styles.container,
+								{
+									flexDirection: item.id === 'reason' ? 'column' : 'row',
+								},
+							]}>
 							<View>
-								<ThemedText style={{ fontSize: 14, textAlign: 'left' }}>
+								<ThemedText
+									style={{
+										fontSize: 14,
+										textAlign: 'left',
+										paddingBottom: item.id === 'reason' ? 10 : 0,
+									}}>
 									{item.label}
 								</ThemedText>
 							</View>
@@ -377,10 +442,12 @@ export default function LeaveFormScreen() {
 					<View>
 						<TouchableOpacity
 							onPress={submitLeaveRequest}
+							disabled={isLoading}
 							style={styles.applyeaveButton}>
 							<ThemedText style={styles.applyeaveButtonText}>
-								Apply leave
+								Apply Leave
 							</ThemedText>
+							{isLoading ? <ActivityIndicator color='#fff' /> : null}
 						</TouchableOpacity>
 					</View>
 				</ScrollView>
@@ -417,6 +484,8 @@ const styles = StyleSheet.create({
 		backgroundColor: primaryColor,
 		justifyContent: 'center',
 		alignItems: 'center',
+		flexDirection: 'row',
+		gap: 12,
 		borderRadius: 10,
 	},
 	applyeaveButtonText: {

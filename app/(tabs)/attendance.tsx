@@ -6,6 +6,7 @@ import {
 	TouchableOpacity,
 	KeyboardAvoidingView,
 	useColorScheme,
+	RefreshControl,
 } from 'react-native';
 
 import { ThemedText } from '@/components/ThemedText';
@@ -16,9 +17,11 @@ import { useEffect, useState } from 'react';
 import DailyAttendence from '@/components/DailyAttendence';
 import { useAttendance } from '../contexts/AttendanceContext';
 import DailyAttendenceLoader from '@/components/DailyAttendenceLoader';
+import { primaryColor } from '@/constants/Colors';
 
 export default function AttendanceScreen() {
 	const [open, setOpen] = useState(false);
+	const [refreshing, setRefreshing] = useState(false);
 	const colorScheme = useColorScheme();
 	const {
 		months: contextMonths,
@@ -68,7 +71,8 @@ export default function AttendanceScreen() {
 							padding: 10,
 							justifyContent: 'space-between',
 						}}>
-						<ThemedText style={{ fontSize: 14, marginRight: 5 }}>
+						<ThemedText
+							style={{ fontSize: 14, marginRight: 5, fontWeight: '400' }}>
 							{item.title}
 						</ThemedText>
 						<View
@@ -86,6 +90,12 @@ export default function AttendanceScreen() {
 				))}
 			</View>
 		);
+	};
+
+	const onRefresh = async () => {
+		setRefreshing(true);
+		await fetchAttendanceData();
+		setRefreshing(false);
 	};
 
 	useEffect(() => {
@@ -121,7 +131,7 @@ export default function AttendanceScreen() {
 							alignItems: 'center',
 						}}>
 						<ThemedText
-							style={{ fontSize: 18, textAlign: 'right', marginRight: 5 }}>
+							style={{ fontSize: 16, textAlign: 'right', marginRight: 5 }}>
 							{selectedMonth.label}
 						</ThemedText>
 						<CircleAngleDownIcon
@@ -137,6 +147,14 @@ export default function AttendanceScreen() {
 						paddingBottom: 250,
 					}}
 					showsVerticalScrollIndicator={false}
+					refreshControl={
+						<RefreshControl
+							refreshing={refreshing}
+							onRefresh={onRefresh}
+							tintColor={primaryColor}
+							colors={[primaryColor]}
+						/>
+					}
 					renderItem={({ item }) => <DailyAttendence attendance={item} />}
 					ListEmptyComponent={
 						isLoading ? (

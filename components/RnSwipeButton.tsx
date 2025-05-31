@@ -61,14 +61,20 @@ function RnSwipeButton() {
 					justifyContent: 'space-between',
 					flex: 1,
 					width: '100%',
-					paddingLeft: 60,
+					paddingLeft: 80,
 					paddingRight: 20,
 				}}>
-				<Text style={{ color: '#fff', fontSize: 14, fontWeight: '600' }}>
-					Swipe right to{' '}
-					{currentDayAttendance.checkIn ? 'check out' : 'check in'}
+				<Text
+					style={{
+						color: '#fff',
+						fontSize: 14,
+						lineHeight: 20,
+						fontWeight: '600',
+					}}>
+					{`Swipe right to `}
+					{currentDayAttendance?.checkIn?.time ? 'check out' : 'check in'}
 				</Text>
-				<Text style={{ color: '#fff', fontSize: 12 }}>
+				<Text style={{ color: '#fff', fontSize: 12, lineHeight: 20 }}>
 					{moment(currentTime).format('LT')}
 				</Text>
 			</View>
@@ -83,26 +89,29 @@ function RnSwipeButton() {
 	}, [currentTime]);
 
 	return (
-		<View>
-			<SwipeButton
-				disableResetOnTap
-				forceReset={handleForceReset}
-				railBackgroundColor={colorScheme === 'dark' ? '#373737' : primaryColor}
-				railBorderColor={colorScheme === 'dark' ? '#373737' : primaryColor}
-				railStyles={{
-					backgroundColor: colorScheme === 'dark' ? '#171717' : primaryColor,
-					borderColor: colorScheme === 'dark' ? '#171717' : primaryColor,
-				}}
-				thumbIconBackgroundColor={
-					colorScheme === 'dark' ? '#171717' : '#FFFFFF'
-				}
-				thumbIconBorderColor={colorScheme === 'dark' ? '#373737' : primaryColor}
-				thumbIconComponent={() => <ArrowSimpleIcon color={primaryColor} />}
-				titleColor='#fff'
-				onSwipeSuccess={handleSwipeSuccess}
-				titleComponent={titleComponent}
-			/>
-		</View>
+		<SwipeButton
+			disableResetOnTap
+			forceReset={handleForceReset}
+			railBackgroundColor={colorScheme === 'dark' ? '#373737' : primaryColor}
+			railBorderColor={colorScheme === 'dark' ? '#373737' : primaryColor}
+			railStyles={{
+				backgroundColor: colorScheme === 'dark' ? '#171717' : primaryColor,
+				borderColor: colorScheme === 'dark' ? '#171717' : primaryColor,
+				height: 60,
+			}}
+			thumbIconBackgroundColor={colorScheme === 'dark' ? '#171717' : '#FFFFFF'}
+			thumbIconBorderColor={colorScheme === 'dark' ? '#373737' : primaryColor}
+			thumbIconComponent={() => <ArrowSimpleIcon color={primaryColor} />}
+			thumbIconWidth={60}
+			thumbIconHeight={60}
+			thumbIconStyles={{
+				height: 60,
+				minHeight: 60,
+			}}
+			titleColor='#fff'
+			onSwipeSuccess={handleSwipeSuccess}
+			titleComponent={titleComponent}
+		/>
 	);
 }
 

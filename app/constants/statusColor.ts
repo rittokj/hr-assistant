@@ -2,7 +2,7 @@ export const leaveRequestStatuses = {
 	2: { stateName: 'Draft', color: '#343a40', textColor: '#ffffff' },
 	3: { stateName: 'In Progress', color: '#007bff', textColor: '#ffffff' },
 	4: { stateName: 'Completed', color: '#f8f9fa', textColor: '#212529' },
-	5: { stateName: 'New', color: '#17a2b8', textColor: '#ffffff' },
+	5: { stateName: 'New', color: '#ECE9F2', textColor: '#000000' },
 	6: { stateName: 'Contacted', color: '#ffc107', textColor: '#212529' },
 	7: { stateName: 'Document Recieved', color: '#343a40', textColor: '#ffffff' },
 	8: { stateName: 'Invoice', color: '#28a745', textColor: '#ffffff' },
@@ -16,7 +16,7 @@ export const leaveRequestStatuses = {
 	16: { stateName: 'Email Delivery', color: '#343a40', textColor: '#ffffff' },
 	17: { stateName: 'Hold', color: '#007bff', textColor: '#ffffff' },
 	18: { stateName: 'Expired', color: '#007bff', textColor: '#ffffff' },
-	19: { stateName: 'Approved', color: '#007bff', textColor: '#ffffff' },
+	19: { stateName: 'Approved', color: '#C3FFA6', textColor: '#000000' },
 	20: { stateName: 'Followup', color: '#343a40', textColor: '#ffffff' },
 	21: { stateName: 'Callback', color: '#343a40', textColor: '#ffffff' },
 	22: { stateName: 'No response', color: '#343a40', textColor: '#ffffff' },
@@ -52,4 +52,5 @@ export const leaveRequestStatuses = {
 	1039: { stateName: 'Approved RW', color: '#343a40', textColor: '#ffffff' },
 	1040: { stateName: 'NewRW', color: '#007bff', textColor: '#ffffff' },
 	1042: { stateName: 'Rejected RW', color: '#17a2b8', textColor: '#ffffff' },
+	1054: { stateName: 'Cancelled', color: '#F77', textColor: '#FFF' },
 };

@@ -10,13 +10,58 @@ type AuthTokens = {
 	employeeId: string | null;
 };
 
+type ProfileInfo = {
+	employeeID: string;
+	employeeName?: string;
+	profileImagePath?: string;
+	designationDTO?: {
+		designationName?: string;
+	};
+	genderCdNavigationDTO?: {
+		lookUpName?: string;
+	};
+	dob?: string;
+	emailId?: string;
+	mobileNo?: string;
+	joinDateText?: string;
+	qualificationCdNavigationDTO?: {
+		lookUpName?: string;
+	};
+	offerSignedDateText?: string;
+	departmentDTO?: {
+		departmentName?: string;
+	};
+	reportingTO?: string;
+	sponsorName?: string;
+	holiday?: string;
+	employeeDocumentDTOList?: Array<{
+		documentTypeDTO: {
+			documentTypeCode: string;
+			documentTypeName: string;
+		};
+		issueDateText?: string;
+		expiryDateText?: string;
+	}>;
+	employeeSalaryDTOList?: Array<{
+		totalSalary: string;
+		dateFromText: string;
+		version: string;
+	}>;
+};
+
 type AuthContextType = {
 	tokens: AuthTokens;
 	isLoading: boolean;
+	initialLoading: boolean;
 	isAuthenticated: boolean;
-	profileInfo: object | null;
+	profileInfo: ProfileInfo | null;
 	login: (username: string, password: string) => Promise<void>;
 	logout: () => Promise<void>;
+	getProfileInfo: (
+		userId: string,
+		callback1: any,
+		callback2: any
+	) => Promise<void>;
 };
 
 export const AuthContext = createContext<AuthContextType | null>(null);
@@ -35,12 +80,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 		refreshToken: null,
 		employeeId: null,
 	});
-	const [isLoading, setIsLoading] = useState(true);
-	const [profileInfo, setProfileInfo] = useState(null);
+	const [isLoading, setIsLoading] = useState(false);
+	const [initialLoading, setInitialLoading] = useState(true);
+	const [profileInfo, setProfileInfo] = useState<ProfileInfo | null>(null);
 
 	useEffect(() => {
 		loadTokens();
 	}, []);
+	const setLoad = (val: any) => {
+		setInitialLoading(val);
+	};
 
 	const loadTokens = async () => {
 		try {
@@ -58,15 +107,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 					refreshToken,
 					employeeId,
 				});
-				getProfileInfo(employeeId, null, null);
+				getProfileInfo(
+					employeeId,
+					() => {
+						setLoad(false);
+					},
+					() => {
+						setLoad(false);
+					}
+				);
+			} else {
+				setLoad(false);
 			}
 		} catch (error) {
-		} finally {
-			setIsLoading(false);
+			setLoad(false);
 		}
 	};
 
-	const login = async (userName: string, password: string) => {
+	const login = async (userName: string, password: string): Promise<void> => {
+		setIsLoading(true);
 		try {
 			return new Promise((resolve, reject) => {
 				axiosInstance
@@ -75,10 +134,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 						password,
 						refreshToken: '',
 					})
-					.then((response) => {
+					.then(async (response) => {
 						if (response?.data?.result?.user?.employeeId) {
 							const { tokenModel, user } = response?.data?.result;
-							Promise.all([
+							await Promise.all([
 								AsyncStorage.setItem('accessToken', tokenModel.token),
 								AsyncStorage.setItem('refreshToken', tokenModel.refreshToken),
 								AsyncStorage.setItem('employeeId', `${user.employeeId}`),
@@ -90,13 +149,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 							});
 							getProfileInfo(
 								user.employeeId,
-								() => resolve(user.employeeId),
+								() => resolve(),
 								() => reject()
 							);
 						} else reject('No response');
 					})
 					.catch((err) => {
 						reject(err);
+					})
+					.finally(() => {
+						setIsLoading(false);
 					});
 			});
 		} catch (error) {
@@ -120,6 +182,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 				if (callback2) callback2();
 			}
 		} catch (error) {
+			if (callback2) callback2();
 			throw error;
 		}
 	};
@@ -144,9 +207,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 				tokens,
 				profileInfo,
 				isLoading,
+				initialLoading,
 				isAuthenticated: Boolean(profileInfo?.employeeID),
 				login,
 				logout,
+				getProfileInfo,
 			}}>
 			{children}
 		</AuthContext.Provider>

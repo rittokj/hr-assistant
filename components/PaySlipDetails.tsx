@@ -20,14 +20,9 @@ import { primaryColor, primaryColorLight } from '@/constants/Colors';
 interface PaySlipDetailsProps {
 	open: string;
 	setOpen: (value: string) => void;
-	title?: string;
 }
 
-function PaySlipDetails({
-	open,
-	setOpen,
-	title = 'February',
-}: PaySlipDetailsProps) {
+function PaySlipDetails({ open, setOpen }: PaySlipDetailsProps) {
 	const sheetRef = useRef<BottomSheet>(null);
 	const {
 		fetchPayslipDetails,

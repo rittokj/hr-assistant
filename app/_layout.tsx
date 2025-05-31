@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import 'react-native-reanimated';
 import { TouchableOpacity, View } from 'react-native';
 import {
@@ -7,7 +7,7 @@ import {
 	ThemeProvider,
 } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, Redirect } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -17,15 +17,33 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 
 import AngleIcon from '@/assets/svgs/Angle';
 import { ThemedText } from '@/components/ThemedText';
-import { AuthProvider } from './contexts/AuthContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LeaveProvider } from './contexts/LeaveContext';
 import { AttendanceProvider } from './contexts/AttendanceContext';
 import { toastConfig } from './utils/toastConfig';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { PayslipProvider } from './contexts/PayslipContext';
+import { ProfileProvider } from './contexts/ProfileContext';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
+
+const RootLayoutNav = memo(() => {
+	const { isAuthenticated, initialLoading } = useAuth();
+
+	// Show splash screen while loading
+	if (initialLoading) {
+		return <Redirect href='/' />;
+	}
+
+	// If authenticated, redirect to tabs
+	if (isAuthenticated) {
+		return <Redirect href='/(tabs)' />;
+	}
+
+	// If not authenticated, redirect to login
+	return <Redirect href='/login' />;
+}, []);
 
 function StackLayout() {
 	const colorScheme = useColorScheme();
@@ -59,13 +77,17 @@ function StackLayout() {
 				options={{ headerShown: false }}
 			/>
 			<Stack.Screen
+				name='login'
+				options={{ headerShown: false }}
+			/>
+			<Stack.Screen
 				name='(tabs)'
 				options={{ headerShown: false }}
 			/>
 			<Stack.Screen
 				name='notifications'
 				options={{
-					title: 'Apply Leave',
+					title: '',
 					header: (props) => {
 						return (
 							<View
@@ -107,7 +129,6 @@ function StackLayout() {
 			<Stack.Screen
 				name='leave-form'
 				options={{
-					title: 'Apply Leave',
 					header: (props) => {
 						return (
 							<View
@@ -149,7 +170,6 @@ function StackLayout() {
 			<Stack.Screen
 				name='request-details'
 				options={{
-					title: 'Apply Leave',
 					header: (props) => {
 						return (
 							<View
@@ -216,9 +236,12 @@ export default function RootLayout() {
 						<LeaveProvider>
 							<AttendanceProvider>
 								<PayslipProvider>
-									<StackLayout />
-									<ToastManager config={toastConfig} />
-									<StatusBar style='auto' />
+									<ProfileProvider>
+										<RootLayoutNav />
+										<StackLayout />
+										<ToastManager config={toastConfig} />
+										<StatusBar style='auto' />
+									</ProfileProvider>
 								</PayslipProvider>
 							</AttendanceProvider>
 						</LeaveProvider>

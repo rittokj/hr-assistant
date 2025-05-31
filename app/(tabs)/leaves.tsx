@@ -4,7 +4,7 @@ import {
 	SafeAreaView,
 	FlatList,
 	Platform,
-	useColorScheme,
+	RefreshControl,
 } from 'react-native';
 
 import { Link } from 'expo-router';
@@ -14,13 +14,26 @@ import { ThemedView } from '@/components/ThemedView';
 import LeaveRequest from '@/components/LeaveRequest';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useLeaves } from '../contexts/LeaveContext';
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { primaryColor } from '@/constants/Colors';
 
 export default function LeavesScreen() {
 	const backgroundColor = useThemeColor({}, 'background');
-	const colorScheme = useColorScheme();
 	const { leaveRequests, isLoading, getLeaveRequests } = useLeaves();
+	const [refreshing, setRefreshing] = useState(false);
+
+	const onRefresh = useCallback(() => {
+		setRefreshing(true);
+		getLeaveRequests({
+			offset: 0,
+			limit: 10,
+			search: '',
+			isExpired: 0,
+			filterList: [],
+		}).finally(() => {
+			setRefreshing(false);
+		});
+	}, []);
 
 	useEffect(() => {
 		getLeaveRequests({
@@ -59,6 +72,14 @@ export default function LeavesScreen() {
 					showsVerticalScrollIndicator={false}
 					ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
 					renderItem={({ item }) => <LeaveRequest leave={item} />}
+					refreshControl={
+						<RefreshControl
+							refreshing={refreshing}
+							onRefresh={onRefresh}
+							tintColor={primaryColor}
+							colors={[primaryColor]}
+						/>
+					}
 					ListEmptyComponent={
 						isLoading ? (
 							<ThemedText style={{ textAlign: 'center', marginTop: 20 }}>
