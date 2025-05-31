@@ -225,10 +225,10 @@ export default function ProfileScreen() {
     {
       id: "salaryInfo",
       label: "Salary Info",
-      size: 80,
+      size: 105,
       list:
         profileInfo?.employeeSalaryDTOList?.map((i) => ({
-          id: "Total_Salary",
+          id: i?.employeeSalaryId,
           label: "Salary",
           value: `Total: ${i.totalSalary}\nDate From: ${i.dateFromText}\nVersion: ${i.version}`,
         })) || [],
