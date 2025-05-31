@@ -57,7 +57,7 @@ const LoginScreen = () => {
 	return (
 		<View style={styles.container}>
 			<Image
-				source={require('@/assets/images/logo.png')}
+				source={require('@/assets/images/logo-2.png')}
 				style={styles.logo}
 			/>
 			<View style={styles.textContainer}>
@@ -97,14 +97,14 @@ const LoginScreen = () => {
 
 const styles = StyleSheet.create({
 	container: {
-		backgroundColor: '#FFFFFF',
+		backgroundColor: '#D1C9BE',
 		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center',
 		padding: 20,
 	},
 	logo: {
-		width: '80%',
+		width: 120,
 		height: 120,
 		objectFit: 'contain',
 		marginBottom: 20,

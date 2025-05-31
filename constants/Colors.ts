@@ -4,12 +4,12 @@
  */
 
 // Accore Lab
-export const primaryColor = '#007AFF';
-export const primaryColorLight = '#E5F2FF';
+// export const primaryColor = '#007AFF';
+// export const primaryColorLight = '#E5F2FF';
 
 // Art Nuveau Decor
-// export const primaryColor = '#BE9976';
-// export const primaryColorLight = '#f8f5f1';
+export const primaryColor = '#BE9976';
+export const primaryColorLight = '#f8f5f1';
 
 const tintColorLight = '#0a7ea4';
 const tintColorDark = '#fff';
