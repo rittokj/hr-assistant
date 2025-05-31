@@ -29,7 +29,7 @@ import { useLeaves } from "../contexts/LeaveContext";
 import RecentRequestsLoader from "@/components/RecentRequestsLoader";
 import GraphLoader from "@/components/GraphLoader";
 import { API_URL } from "@/constants/constants";
-import { primaryColor } from "@/constants/Colors";
+import { primaryColor, primaryColorLight } from "@/constants/Colors";
 
 interface ProfileInfo {
   profileImagePath?: string;
@@ -88,10 +88,14 @@ export default function HomeScreen() {
               source={{
                 uri: `${API_URL}documents/${profileInfo.profileImagePath}`,
               }}
-              style={styles.reactLogo}
+              style={[styles.reactLogo, { backgroundColor: primaryColorLight }]}
             />
           ) : (
-            <View style={styles.reactLogo}>
+            <View
+              style={[
+                styles.reactLogo,
+                { backgroundColor: primaryColorLight },
+              ]}>
               <DefaultUserImageIcon />
             </View>
           )}
@@ -374,6 +378,6 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     objectFit: "cover",
     resizeMode: "contain",
-    backgroundColor: "#676767",
+    backgroundColor: "#CCC",
   },
 });
