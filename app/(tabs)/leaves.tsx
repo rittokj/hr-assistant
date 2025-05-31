@@ -80,11 +80,13 @@ export default function LeavesScreen() {
               colors={[primaryColor]}
             />
           }
-          ListEmptyComponent={() => (
-            <ThemedText style={{ textAlign: "center", marginTop: 20 }}>
-              No leave requests found
-            </ThemedText>
-          )}
+          ListEmptyComponent={() =>
+            !isLoading ? (
+              <ThemedText style={{ textAlign: "center", marginTop: 20 }}>
+                No leave requests found
+              </ThemedText>
+            ) : null
+          }
           ListFooterComponent={() => (isLoading ? <LeavesLoader /> : null)}
         />
       </ThemedView>
