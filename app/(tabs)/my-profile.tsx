@@ -23,7 +23,7 @@ import { useAuth, useLogout } from "../contexts/AuthContext";
 import { useProfile } from "../contexts/ProfileContext";
 import DefaultUserImageIcon from "@/assets/svgs/DefaultUserImage";
 import { API_URL } from "@/constants/constants";
-import { primaryColor } from "@/constants/Colors";
+import { primaryColor, primaryColorLight } from "@/constants/Colors";
 import AngleIcon from "@/assets/svgs/Angle";
 import CloseIcon from "@/assets/svgs/Close";
 import { useLocalSearchParams } from "expo-router";
@@ -331,10 +331,17 @@ export default function ProfileScreen() {
                 source={{
                   uri: `${API_URL}documents/${profileInfo.profileImagePath}`,
                 }}
-                style={styles.profileImage}
+                style={[
+                  styles.profileImage,
+                  { backgroundColor: primaryColorLight },
+                ]}
               />
             ) : (
-              <View style={styles.profileImage}>
+              <View
+                style={[
+                  styles.profileImage,
+                  { backgroundColor: primaryColorLight },
+                ]}>
                 <DefaultUserImageIcon
                   color={colorScheme === "dark" ? "#373737" : "#171717"}
                 />
