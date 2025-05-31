@@ -73,8 +73,7 @@ export const NotificationProvider = ({
         getNotifications,
         hasMore,
         currentPage,
-      }}
-    >
+      }}>
       {children}
     </NotificationContext.Provider>
   );

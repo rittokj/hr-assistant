@@ -38,7 +38,7 @@ function PaySlip({ setOpen, slip }: PaySlipProps) {
             <ThemedText style={styles.detailsText}>Details</ThemedText>
             <View style={styles.iconContainer}>
               <View style={styles.iconWrapper}>
-                <AngleIcon color="#fff" />
+                <AngleIcon color='#fff' />
               </View>
             </View>
           </View>
