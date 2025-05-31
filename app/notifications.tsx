@@ -1,11 +1,11 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import {
   View,
   FlatList,
   StyleSheet,
   useColorScheme,
-  ActivityIndicator,
   TouchableOpacity,
+  RefreshControl,
 } from "react-native";
 import moment from "moment";
 import { useRouter } from "expo-router";
@@ -28,6 +28,7 @@ interface Notification {
 
 const NotificationsScreen = () => {
   const router = useRouter();
+  const [refreshing, setRefreshing] = useState(false);
   const {
     isNotificationsLoading,
     getNotifications,
@@ -39,6 +40,12 @@ const NotificationsScreen = () => {
 
   useEffect(() => {
     getNotifications(1);
+  }, []);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await getNotifications(1);
+    setRefreshing(false);
   }, []);
 
   const loadMore = useCallback(() => {
@@ -137,33 +144,29 @@ const NotificationsScreen = () => {
   );
 
   const renderFooter = () => {
-    if (!isNotificationsLoading) return null;
-    return (
-      <View style={styles.footerLoader}>
-        <ActivityIndicator
-          size='small'
-          color={primaryColor}
-        />
-      </View>
-    );
+    if (isNotificationsLoading) return <NotificationLoader />;
   };
 
   return (
     <ThemedView style={styles.container}>
-      {currentPage === 1 && isNotificationsLoading ? (
-        <NotificationLoader />
-      ) : (
-        <FlatList
-          data={notifications}
-          keyExtractor={(item) => item.notificationLogId}
-          renderItem={renderItem}
-          ListEmptyComponent={renderEmptyState}
-          ListFooterComponent={renderFooter}
-          onEndReached={loadMore}
-          onEndReachedThreshold={0.5}
-          contentContainerStyle={styles.listContent}
-        />
-      )}
+      <FlatList<Notification>
+        data={notifications}
+        keyExtractor={(item) => item.notificationLogId.toString()}
+        renderItem={renderItem}
+        ListEmptyComponent={renderEmptyState}
+        ListFooterComponent={renderFooter}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        contentContainerStyle={styles.listContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={[primaryColor]}
+            tintColor={primaryColor}
+          />
+        }
+      />
     </ThemedView>
   );
 };
