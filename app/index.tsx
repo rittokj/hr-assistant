@@ -5,7 +5,7 @@ const SplashScreen = memo(() => {
 	return (
 		<View style={styles.container}>
 			<Image
-				source={require('@/assets/images/logo.png')}
+				source={require('@/assets/images/logo-2.png')}
 				style={styles.logo}
 			/>
 		</View>
