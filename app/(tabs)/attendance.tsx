@@ -59,7 +59,7 @@ export default function AttendanceScreen() {
             id: "3",
             title: "Total Working Hours",
             value: summary.totalWorkingHours.toString(),
-            unit: "Hours",
+            unit: "",
           },
         ].map((item) => (
           <View
