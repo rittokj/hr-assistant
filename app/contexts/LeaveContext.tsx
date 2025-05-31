@@ -56,6 +56,7 @@ type LeaveContextType = {
   getLeaveRequestById: (id: number) => Promise<void>;
   cancelLeaveRequestById: (id: number) => Promise<void>;
   applyLeave: (params: PaginationParams) => Promise<void>;
+  resetLeaveContext: () => void;
 };
 
 export const LeaveContext = createContext<LeaveContextType | null>(null);
@@ -232,6 +233,14 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
     setSelectedLeaveRequest(leave);
   };
 
+  const resetLeaveContext = () => {
+    setLeaveTypesList([]);
+    setLeaveRequests([]);
+    setRecentLeaveRequests([]);
+    setSelectedLeaveDetails({ id: 0 });
+    setSelectedLeaveRequest(null);
+  };
+
   return (
     <LeaveContext.Provider
       value={{
@@ -250,6 +259,7 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
         getLeaveRequests,
         getLeaveRequestById,
         cancelLeaveRequestById,
+        resetLeaveContext,
       }}>
       {children}
     </LeaveContext.Provider>

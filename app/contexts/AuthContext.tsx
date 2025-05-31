@@ -3,6 +3,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { axiosInstance } from "../utils/axios";
 import { API_URL } from "@/constants/constants";
+import { useLeaves } from "../contexts/LeaveContext";
+import { useNotification } from "../contexts/NotificationContext";
+import { useProfile } from "../contexts/ProfileContext";
+import { usePayslip } from "../contexts/PayslipContext";
 
 type AuthTokens = {
   accessToken: string | null;
@@ -62,6 +66,8 @@ type AuthContextType = {
     callback1: any,
     callback2: any
   ) => Promise<void>;
+  setTokens: (tokens: AuthTokens) => void;
+  setProfileInfo: (info: ProfileInfo | null) => void;
 };
 
 export const AuthContext = createContext<AuthContextType | null>(null);
@@ -189,13 +195,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     try {
+      // Clear all AsyncStorage items
       await AsyncStorage.multiRemove([
         "accessToken",
         "refreshToken",
         "employeeId",
       ]);
+
+      // Reset all context states
       setProfileInfo(null);
       setTokens({ accessToken: null, refreshToken: null, employeeId: null });
+
+      // Reset axios instance headers
+      delete axiosInstance.defaults.headers.common["Authorization"];
+
+      // Clear any other stored data
+      await AsyncStorage.clear();
+
+      // Reset all other contexts
+      const leaveContext = useLeaves();
+      const notificationContext = useNotification();
+      const profileContext = useProfile();
+      const payslipContext = usePayslip();
+
+      leaveContext?.resetLeaveContext();
+      notificationContext?.resetNotificationContext();
+      profileContext?.resetProfileContext();
+      payslipContext?.resetPayslipContext();
     } catch (error) {
       throw error;
     }
@@ -212,8 +238,49 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         login,
         logout,
         getProfileInfo,
+        setTokens,
+        setProfileInfo,
       }}>
       {children}
     </AuthContext.Provider>
   );
+};
+
+export const useLogout = () => {
+  const { tokens, setTokens, setProfileInfo } = useAuth();
+  const leaveContext = useLeaves();
+  const notificationContext = useNotification();
+  const profileContext = useProfile();
+  const payslipContext = usePayslip();
+
+  const logout = async () => {
+    try {
+      // Clear all AsyncStorage items
+      await AsyncStorage.multiRemove([
+        "accessToken",
+        "refreshToken",
+        "employeeId",
+      ]);
+
+      // Reset all context states
+      setProfileInfo(null);
+      setTokens({ accessToken: null, refreshToken: null, employeeId: null });
+
+      // Reset axios instance headers
+      delete axiosInstance.defaults.headers.common["Authorization"];
+
+      // Clear any other stored data
+      await AsyncStorage.clear();
+
+      // Reset all other contexts
+      leaveContext?.resetLeaveContext();
+      notificationContext?.resetNotificationContext();
+      profileContext?.resetProfileContext();
+      payslipContext?.resetPayslipContext();
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  return logout;
 };

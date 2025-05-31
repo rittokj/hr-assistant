@@ -32,6 +32,7 @@ type ProfileContextType = {
   error: string | null;
   fetchMemos: () => Promise<void>;
   fetchWarnings: () => Promise<void>;
+  resetProfileContext: () => void;
 };
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -103,6 +104,12 @@ export const ProfileProvider = ({
     }
   };
 
+  const resetProfileContext = () => {
+    setMemos([]);
+    setWarnings([]);
+    setError(null);
+  };
+
   return (
     <ProfileContext.Provider
       value={{
@@ -112,6 +119,7 @@ export const ProfileProvider = ({
         error,
         fetchMemos,
         fetchWarnings,
+        resetProfileContext,
       }}>
       {children}
     </ProfileContext.Provider>

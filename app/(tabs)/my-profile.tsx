@@ -19,7 +19,7 @@ import BottomSheet, { BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import AngleRightIcon from "@/assets/svgs/AngleRight";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth, useLogout } from "../contexts/AuthContext";
 import { useProfile } from "../contexts/ProfileContext";
 import DefaultUserImageIcon from "@/assets/svgs/DefaultUserImage";
 import { API_URL } from "@/constants/constants";
@@ -54,7 +54,8 @@ export default function ProfileScreen() {
   const scrollViewRef = useRef(null);
   const itemHeights = useRef({});
   const snapPoints = useMemo(() => ["65%"], []);
-  const { profileInfo, logout, tokens, getProfileInfo } = useAuth();
+  const { profileInfo } = useAuth();
+  const logout = useLogout();
   const { memos, warnings, fetchMemos, fetchWarnings } = useProfile();
   const animationValues = useRef<Record<string, Animated.Value>>({}).current;
   const logoutSheetRef = useRef<BottomSheet>(null);
@@ -109,19 +110,15 @@ export default function ProfileScreen() {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      if (tokens.employeeId) {
-        await Promise.all([
-          getProfileInfo(tokens.employeeId, null, null),
-          fetchMemos(),
-          fetchWarnings(),
-        ]);
+      if (profileInfo?.employeeID) {
+        await Promise.all([fetchMemos(), fetchWarnings()]);
       }
     } catch (error) {
       console.error("Error refreshing profile:", error);
     } finally {
       setRefreshing(false);
     }
-  }, [tokens.employeeId]);
+  }, [profileInfo?.employeeID]);
 
   const handleOpenAndScroll = (id, index) => {
     toggleSection(id);

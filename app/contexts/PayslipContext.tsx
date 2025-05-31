@@ -46,6 +46,7 @@ interface PayslipContextType {
   fetchPayslipDetails: (id: string) => Promise<void>;
   resetPayslipDetails: () => void;
   downloadPayslip: (payrollGenerationId: string) => null;
+  resetPayslipContext: () => void;
 }
 
 const PayslipContext = createContext<PayslipContextType | undefined>(undefined);
@@ -175,6 +176,12 @@ export function PayslipProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const resetPayslipContext = () => {
+    setPayslips(null);
+    setPayslipDetails(null);
+    setError(null);
+  };
+
   return (
     <PayslipContext.Provider
       value={{
@@ -187,6 +194,7 @@ export function PayslipProvider({ children }: { children: React.ReactNode }) {
         fetchPayslipDetails,
         resetPayslipDetails,
         downloadPayslip,
+        resetPayslipContext,
       }}>
       {children}
     </PayslipContext.Provider>

@@ -15,6 +15,7 @@ type NotificationContextType = {
   getNotifications: (page?: number) => Promise<void>;
   hasMore: boolean;
   currentPage: number;
+  resetNotificationContext: () => void;
 };
 
 export const NotificationContext =
@@ -39,6 +40,12 @@ export const NotificationProvider = ({
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+
+  const resetNotificationContext = () => {
+    setNotifications([]);
+    setHasMore(true);
+    setCurrentPage(1);
+  };
 
   const getNotifications = async (page: number = 1) => {
     try {
@@ -73,6 +80,7 @@ export const NotificationProvider = ({
         getNotifications,
         hasMore,
         currentPage,
+        resetNotificationContext,
       }}>
       {children}
     </NotificationContext.Provider>
