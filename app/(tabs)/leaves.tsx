@@ -6,16 +6,16 @@ import {
   Platform,
   RefreshControl,
 } from "react-native";
-
 import { Link } from "expo-router";
 
+import { useLeaves } from "../contexts/LeaveContext";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import LeaveRequest from "@/components/LeaveRequest";
 import { useThemeColor } from "@/hooks/useThemeColor";
-import { useLeaves } from "../contexts/LeaveContext";
 import { useEffect, useState, useCallback } from "react";
 import { primaryColor } from "@/constants/Colors";
+import LeavesLoader from "@/components/LeavesLoader";
 
 export default function LeavesScreen() {
   const backgroundColor = useThemeColor({}, "background");
@@ -80,17 +80,12 @@ export default function LeavesScreen() {
               colors={[primaryColor]}
             />
           }
-          ListEmptyComponent={
-            isLoading ? (
-              <ThemedText style={{ textAlign: "center", marginTop: 20 }}>
-                Loading...
-              </ThemedText>
-            ) : (
-              <ThemedText style={{ textAlign: "center", marginTop: 20 }}>
-                No leave requests found
-              </ThemedText>
-            )
-          }
+          ListEmptyComponent={() => (
+            <ThemedText style={{ textAlign: "center", marginTop: 20 }}>
+              No leave requests found
+            </ThemedText>
+          )}
+          ListFooterComponent={() => (isLoading ? <LeavesLoader /> : null)}
         />
       </ThemedView>
     </SafeAreaView>

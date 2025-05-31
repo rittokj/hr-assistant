@@ -57,34 +57,36 @@ export default function PaySlipScreen() {
             Pay Slips
           </ThemedText>
         </View>
-        {loading ? (
-          <PaySlipLoader />
-        ) : (
-          <FlatList
-            data={payslips}
-            contentContainerStyle={{
-              padding: 20,
-              paddingTop: 10,
-              paddingBottom: 100,
-            }}
-            showsVerticalScrollIndicator={false}
-            ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                tintColor={primaryColor}
-                colors={[primaryColor]}
-              />
-            }
-            renderItem={({ item }) => (
-              <PaySlip
-                slip={item}
-                setOpen={setOpen}
-              />
-            )}
-          />
-        )}
+        <FlatList
+          data={payslips}
+          contentContainerStyle={{
+            padding: 20,
+            paddingTop: 10,
+            paddingBottom: 100,
+          }}
+          showsVerticalScrollIndicator={false}
+          ItemSeparatorComponent={() => <View style={{ height: 10 }} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={primaryColor}
+              colors={[primaryColor]}
+            />
+          }
+          renderItem={({ item }) => (
+            <PaySlip
+              slip={item}
+              setOpen={setOpen}
+            />
+          )}
+          ListEmptyComponent={() => (
+            <ThemedText style={{ textAlign: "center", marginTop: 20 }}>
+              No pay slips found
+            </ThemedText>
+          )}
+          ListFooterComponent={() => (loading ? <PaySlipLoader /> : null)}
+        />
       </ThemedView>
       <PaySlipDetails
         open={open}
