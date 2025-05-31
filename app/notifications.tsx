@@ -135,17 +135,17 @@ const NotificationsScreen = () => {
     );
   };
 
-  const renderEmptyState = () => (
-    <View style={styles.emptyState}>
-      <ThemedText style={styles.emptyStateText}>
-        No notifications yet
-      </ThemedText>
-    </View>
-  );
+  const renderEmptyState = () =>
+    !isNotificationsLoading ? (
+      <View style={styles.emptyState}>
+        <ThemedText style={styles.emptyStateText}>
+          No notifications yet
+        </ThemedText>
+      </View>
+    ) : null;
 
-  const renderFooter = () => {
-    if (isNotificationsLoading) return <NotificationLoader />;
-  };
+  const renderFooter = () =>
+    isNotificationsLoading ? <NotificationLoader /> : null;
 
   return (
     <ThemedView style={styles.container}>

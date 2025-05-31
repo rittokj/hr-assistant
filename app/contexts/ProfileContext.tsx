@@ -12,6 +12,11 @@ type Memo = {
   memoStatus: string;
   employeeId: number;
   employeeName: string;
+  memoDTO: {
+    memoId: number;
+    subject: string;
+    memoText: string;
+  };
 };
 
 type Warning = {
@@ -23,6 +28,8 @@ type Warning = {
   warningStatus: string;
   employeeId: number;
   employeeName: string;
+  subject: string;
+  warningMessage: string;
 };
 
 type ProfileContextType = {
