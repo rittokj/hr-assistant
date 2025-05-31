@@ -98,12 +98,11 @@ export default function HomeScreen() {
 
           <View>
             <ThemedText
-              type="subtitle"
+              type='subtitle'
               style={{
                 fontSize: 18,
                 fontWeight: "500",
-              }}
-            >
+              }}>
               {profileInfo?.employeeName || ""}
             </ThemedText>
             <ThemedText style={{ fontSize: 14 }}>
@@ -111,7 +110,7 @@ export default function HomeScreen() {
             </ThemedText>
           </View>
         </View>
-        <Link href="/notifications">
+        <Link href='/notifications'>
           <View style={{ padding: 20 }}>
             <BellIcon color={primaryColor} />
           </View>
@@ -126,22 +125,19 @@ export default function HomeScreen() {
             tintColor={primaryColor}
             colors={[primaryColor]}
           />
-        }
-      >
+        }>
         <ThemedView style={styles.titleContainer}>
           <View style={styles.titleGraphSection}>
             <ThemedText
-              type="defaultSemiBold"
-              style={{ fontWeight: "500", fontSize: 14 }}
-            >
+              type='defaultSemiBold'
+              style={{ fontWeight: "500", fontSize: 14 }}>
               Attendance
             </ThemedText>
-            <Link href="/attendance">
+            <Link href='/attendance'>
               <ThemedText
                 lightColor={primaryColor}
                 darkColor={primaryColor}
-                style={{ fontSize: 12 }}
-              >
+                style={{ fontSize: 12 }}>
                 View All
               </ThemedText>
             </Link>
@@ -186,8 +182,7 @@ export default function HomeScreen() {
                     backgroundColor:
                       colorScheme === "dark" ? "#272727" : "#E6F2FF",
                   },
-                ]}
-              >
+                ]}>
                 <ArrowRightIcon color={primaryColor} />
               </View>
               <ThemedText style={{ fontSize: 14 }}>Check in</ThemedText>
@@ -197,7 +192,7 @@ export default function HomeScreen() {
                 <ThemedText style={{ fontSize: 14 }}>Loading...</ThemedText>
               ) : (
                 <>
-                  <ThemedText type="title">
+                  <ThemedText type='title'>
                     {currentDayAttendance.checkIn.time || "--:--"}
                   </ThemedText>
                   <ThemedText>
@@ -223,8 +218,7 @@ export default function HomeScreen() {
                     backgroundColor:
                       colorScheme === "dark" ? "#272727" : "#E6F2FF",
                   },
-                ]}
-              >
+                ]}>
                 <ArrowLeftIcon color={primaryColor} />
               </View>
               <ThemedText style={{ fontSize: 14 }}>Check out</ThemedText>
@@ -234,7 +228,9 @@ export default function HomeScreen() {
                 <ThemedText style={{ height: 40 }}>Loading...</ThemedText>
               ) : (
                 <>
-                  <ThemedText type="title" style={{ height: 40 }}>
+                  <ThemedText
+                    type='title'
+                    style={{ height: 40 }}>
                     {currentDayAttendance.checkOut.time || "--:--"}
                   </ThemedText>
                   <ThemedText>
@@ -262,9 +258,11 @@ export default function HomeScreen() {
         ) : recentLeaveRequests?.length ? (
           <ThemedView style={styles.requestsContainer}>
             <View style={styles.requestsTitleSection}>
-              <ThemedText type="defaultSemiBold">My Requests</ThemedText>
-              <Link href="/leaves">
-                <ThemedText lightColor={primaryColor} darkColor={primaryColor}>
+              <ThemedText type='defaultSemiBold'>My Requests</ThemedText>
+              <Link href='/leaves'>
+                <ThemedText
+                  lightColor={primaryColor}
+                  darkColor={primaryColor}>
                   View All
                 </ThemedText>
               </Link>

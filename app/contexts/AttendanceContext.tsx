@@ -163,9 +163,9 @@ export function AttendanceProvider({
       const { result } = response.data;
       setAttendanceList(result[0].attendanceMonthDetail || []);
       setSummary({
-        totalAttendance: result[0].totalAttendance || 0,
-        totalLeaves: result[0].totalLeaves || 0,
-        totalWorkingHours: result[0].totalWorkingHours || 0,
+        totalAttendance: result[0].presentDays || 0,
+        totalLeaves: result[0].absentDays || 0,
+        totalWorkingHours: result[0].monthlyTotalHour || 0,
       });
     } catch (error) {
       console.error("Error fetching attendance data:", error);
@@ -288,8 +288,7 @@ export function AttendanceProvider({
         fetchCurrentWeekAttendance,
         isCurrentDayLoading,
         isCurrentWeekLoading,
-      }}
-    >
+      }}>
       {children}
     </AttendanceContext.Provider>
   );

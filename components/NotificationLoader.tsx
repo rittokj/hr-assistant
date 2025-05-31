@@ -6,7 +6,9 @@ function NotificationLoaderItem() {
   const darkTheme = useColorScheme() == "dark";
 
   return (
-    <ShimmerPlaceHolder visible style={{ opacity: darkTheme ? 0.5 : 1 }}>
+    <ShimmerPlaceHolder
+      visible
+      style={{ opacity: darkTheme ? 0.5 : 1 }}>
       <View style={styles.notificationItem}>
         <View style={styles.messageWrapper}>
           <View style={styles.title} />
