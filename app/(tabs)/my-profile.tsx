@@ -239,8 +239,9 @@ export default function ProfileScreen() {
       label: "Warning",
       list: warnings?.length
         ? warnings.map((warning) => ({
-            id: `warning-${warning.employeeWarningId}`,
-            label: warning.warningMessage,
+            id: warning?.subject,
+            label: warning.subject,
+            message: warning.warningMessage,
             openable: true,
           }))
         : [],
@@ -441,7 +442,10 @@ export default function ProfileScreen() {
                                 );
                               }
                               if (item.id === "Warning") {
-                                handleSnapPress(menuItem.label, menuItem.id);
+                                handleSnapPress(
+                                  menuItem.message,
+                                  menuItem.label
+                                );
                               }
                             }}
                             style={[
@@ -467,11 +471,11 @@ export default function ProfileScreen() {
                               {menuItem.label}
                             </ThemedText>
                             {menuItem?.openable ? (
-                              <TouchableOpacity style={styles.iconContainer}>
+                              <View style={styles.iconContainer}>
                                 <View style={styles.iconWrapper}>
                                   <AngleIcon color='#fff' />
                                 </View>
-                              </TouchableOpacity>
+                              </View>
                             ) : (
                               <ThemedText
                                 style={{ fontSize: 12, fontWeight: "500" }}>
