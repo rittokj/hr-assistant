@@ -35,6 +35,7 @@ type MenuItem = {
   value?: string;
   type?: "date";
   memo?: any;
+  message?: string;
 };
 
 type ProfileSection = {
@@ -46,13 +47,13 @@ type ProfileSection = {
 
 export default function ProfileScreen() {
   const colorScheme = useColorScheme();
-  const { memoId, warningId, employeeRequestId } = useLocalSearchParams();
+  const { memoId, warningId } = useLocalSearchParams();
   const [opened, setOpened] = useState<string[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [webViewTest, setWebViewTest] = useState<any>(null);
   const sheetRef = useRef<BottomSheet>(null);
-  const scrollViewRef = useRef(null);
-  const itemHeights = useRef({});
+  const scrollViewRef = useRef<ScrollView>(null);
+  const itemHeights = useRef<Record<number, number>>({});
   const snapPoints = useMemo(() => ["65%"], []);
   const { profileInfo } = useAuth();
   const logout = useLogout();
@@ -67,15 +68,15 @@ export default function ProfileScreen() {
     }, 600);
   };
 
-  const scrollToItem = (index) => {
+  const scrollToItem = (index: number) => {
     const y = Object.values(itemHeights.current)
       .slice(0, index)
-      .reduce((acc, cur) => acc + cur, 0);
+      .reduce((acc: number, cur: number) => acc + cur, 0);
 
     scrollViewRef.current?.scrollTo({ x: 0, y: y, animated: true });
   };
 
-  const handleLayout = (event, index) => {
+  const handleLayout = (event: any, index: number) => {
     itemHeights.current[index] = event.nativeEvent.layout.height;
   };
 
@@ -120,7 +121,7 @@ export default function ProfileScreen() {
     }
   }, [profileInfo?.employeeID]);
 
-  const handleOpenAndScroll = (id, index) => {
+  const handleOpenAndScroll = (id: string, index: number) => {
     toggleSection(id);
     setTimeout(() => {
       scrollToItem(index);

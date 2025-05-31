@@ -80,11 +80,13 @@ export default function PaySlipScreen() {
               setOpen={setOpen}
             />
           )}
-          ListEmptyComponent={() => (
-            <ThemedText style={{ textAlign: "center", marginTop: 20 }}>
-              No pay slips found
-            </ThemedText>
-          )}
+          ListEmptyComponent={() =>
+            !loading ? (
+              <ThemedText style={{ textAlign: "center", marginTop: 20 }}>
+                No pay slips found
+              </ThemedText>
+            ) : null
+          }
           ListFooterComponent={() => (loading ? <PaySlipLoader /> : null)}
         />
       </ThemedView>

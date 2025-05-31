@@ -35,8 +35,9 @@ type AttendanceSummary = {
 interface AttendanceDetDTO {
   AttendanceDetId: number;
   AttendanceId: number;
-  TypeId: number;
+  AttendanceSourceTypeCd: number;
   AttendanceTime: string;
+  TypeId: number;
 }
 
 interface AttendancePayload {
@@ -198,6 +199,7 @@ export function AttendanceProvider({
             AttendanceDetId: 0,
             AttendanceId: id || 0,
             TypeId: typeId,
+            AttendanceSourceTypeCd: 6700002,
             AttendanceTime: currentTime,
           },
         ],
