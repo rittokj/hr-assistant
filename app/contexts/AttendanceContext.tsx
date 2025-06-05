@@ -68,6 +68,7 @@ interface AttendanceContextType {
   fetchCurrentWeekAttendance: () => Promise<void>;
   isCurrentDayLoading: boolean;
   isCurrentWeekLoading: boolean;
+  resetAttendanceContext: () => void;
 }
 
 const AttendanceContext = createContext<AttendanceContextType | undefined>(
@@ -273,6 +274,27 @@ export function AttendanceProvider({
     }
   };
 
+  const resetAttendanceContext = () => {
+    setSelectedMonth({
+      id: "",
+      label: "",
+      value: "",
+      month: null,
+      year: null,
+    });
+    setAttendanceList([]);
+    setSummary({
+      totalAttendance: 0,
+      totalLeaves: 0,
+      totalWorkingHours: 0,
+    });
+    setCurrentDayAttendance({
+      checkIn: { time: "", division: "", id: 0 },
+      checkOut: { time: "", division: "", id: 0 },
+    });
+    setWeeklyAttendance(null);
+  };
+
   return (
     <AttendanceContext.Provider
       value={{
@@ -290,6 +312,7 @@ export function AttendanceProvider({
         fetchCurrentWeekAttendance,
         isCurrentDayLoading,
         isCurrentWeekLoading,
+        resetAttendanceContext,
       }}>
       {children}
     </AttendanceContext.Provider>

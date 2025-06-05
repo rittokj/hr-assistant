@@ -18,32 +18,47 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import AngleIcon from "@/assets/svgs/Angle";
 import { ThemedText } from "@/components/ThemedText";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
-import { LeaveProvider } from "./contexts/LeaveContext";
-import { AttendanceProvider } from "./contexts/AttendanceContext";
+import { LeaveProvider, useLeaves } from "./contexts/LeaveContext";
+import {
+  AttendanceProvider,
+  useAttendance,
+} from "./contexts/AttendanceContext";
 import { toastConfig } from "./utils/toastConfig";
-import { NotificationProvider } from "./contexts/NotificationContext";
-import { PayslipProvider } from "./contexts/PayslipContext";
-import { ProfileProvider } from "./contexts/ProfileContext";
+import {
+  NotificationProvider,
+  useNotification,
+} from "./contexts/NotificationContext";
+import { PayslipProvider, usePayslip } from "./contexts/PayslipContext";
+import { ProfileProvider, useProfile } from "./contexts/ProfileContext";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-const RootLayoutNav = memo(() => {
-  const { isAuthenticated, initialLoading } = useAuth();
+const RootLayoutNav = memo(
+  () => {
+    const { isAuthenticated, initialLoading, isProfileLoaded, isLoading } =
+      useAuth();
 
-  // Show splash screen while loading
-  if (initialLoading) {
-    return <Redirect href='/' />;
-  }
+    // Show splash screen during initial loading
+    if (initialLoading) {
+      return <Redirect href='/' />;
+    }
 
-  // If authenticated, redirect to tabs
-  if (isAuthenticated) {
+    // During login process or profile loading, stay on current screen
+    if (isLoading || (isAuthenticated && !isProfileLoaded)) {
+      return null;
+    }
+
+    // After loading, if not authenticated, show login screen
+    if (!isAuthenticated) {
+      return <Redirect href='/login' />;
+    }
+
+    // If authenticated and profile is loaded, show the main app
     return <Redirect href='/(tabs)' />;
-  }
-
-  // If not authenticated, redirect to login
-  return <Redirect href='/login' />;
-}, []);
+  },
+  (prevProps, nextProps) => true
+);
 
 function StackLayout() {
   const colorScheme = useColorScheme();
@@ -212,6 +227,28 @@ function StackLayout() {
   );
 }
 
+const LogoutHandler = () => {
+  const { isAuthenticated } = useAuth();
+  const leaveContext = useLeaves();
+  const notificationContext = useNotification();
+  const profileContext = useProfile();
+  const payslipContext = usePayslip();
+  const attendanceContext = useAttendance();
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      // Reset all contexts when user is not authenticated
+      if (leaveContext) leaveContext.resetLeaveContext();
+      if (notificationContext) notificationContext.resetNotificationContext();
+      if (profileContext) profileContext.resetProfileContext();
+      if (payslipContext) payslipContext.resetPayslipContext();
+      if (attendanceContext) attendanceContext.resetAttendanceContext();
+    }
+  }, [isAuthenticated]);
+
+  return null;
+};
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [loaded] = useFonts({
@@ -237,6 +274,7 @@ export default function RootLayout() {
               <AttendanceProvider>
                 <PayslipProvider>
                   <ProfileProvider>
+                    <LogoutHandler />
                     <RootLayoutNav />
                     <StackLayout />
                     <ToastManager config={toastConfig} />

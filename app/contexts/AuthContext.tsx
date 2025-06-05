@@ -7,6 +7,7 @@ import { useLeaves } from "../contexts/LeaveContext";
 import { useNotification } from "../contexts/NotificationContext";
 import { useProfile } from "../contexts/ProfileContext";
 import { usePayslip } from "../contexts/PayslipContext";
+import { useAttendance } from "../contexts/AttendanceContext";
 
 type AuthTokens = {
   accessToken: string | null;
@@ -58,6 +59,7 @@ type AuthContextType = {
   isLoading: boolean;
   initialLoading: boolean;
   isAuthenticated: boolean;
+  isProfileLoaded: boolean;
   profileInfo: ProfileInfo | null;
   login: (username: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -88,20 +90,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [isProfileLoaded, setIsProfileLoaded] = useState(false);
   const [profileInfo, setProfileInfo] = useState<ProfileInfo | null>(null);
 
   useEffect(() => {
     loadTokens();
   }, []);
+
   const setLoad = (val: any) => {
     setInitialLoading(val);
   };
 
   const loadTokens = async () => {
     try {
-      // AsyncStorage.removeItem('accessToken');
-      // AsyncStorage.removeItem('refreshToken');
-      // AsyncStorage.removeItem('employeeId');
       const [accessToken, refreshToken, employeeId] = await Promise.all([
         AsyncStorage.getItem("accessToken"),
         AsyncStorage.getItem("refreshToken"),
@@ -117,16 +118,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           employeeId,
           () => {
             setLoad(false);
+            setIsProfileLoaded(true);
           },
           () => {
             setLoad(false);
+            setIsProfileLoaded(false);
           }
         );
       } else {
         setLoad(false);
+        setIsProfileLoaded(false);
       }
     } catch (error) {
       setLoad(false);
+      setIsProfileLoaded(false);
     }
   };
 
@@ -148,26 +153,40 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 AsyncStorage.setItem("refreshToken", tokenModel.refreshToken),
                 AsyncStorage.setItem("employeeId", `${user.employeeId}`),
               ]);
+
+              // Set tokens first
               setTokens({
                 accessToken: tokenModel.token,
                 refreshToken: tokenModel.refreshToken,
                 employeeId: user.employeeId,
               });
+
+              // Then get profile info
               getProfileInfo(
                 user.employeeId,
-                () => resolve(),
-                () => reject()
+                () => {
+                  setIsProfileLoaded(true);
+                  setIsLoading(false);
+                  resolve();
+                },
+                () => {
+                  setIsProfileLoaded(false);
+                  setIsLoading(false);
+                  reject();
+                }
               );
-            } else reject("No response");
+            } else {
+              setIsLoading(false);
+              reject("No response");
+            }
           })
           .catch((err) => {
-            reject(err);
-          })
-          .finally(() => {
             setIsLoading(false);
+            reject(err);
           });
       });
     } catch (error) {
+      setIsLoading(false);
       throw error;
     }
   };
@@ -195,34 +214,20 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     try {
-      // Clear all AsyncStorage items
-      await AsyncStorage.multiRemove([
-        "accessToken",
-        "refreshToken",
-        "employeeId",
-      ]);
-
-      // Reset all context states
-      setProfileInfo(null);
-      setTokens({ accessToken: null, refreshToken: null, employeeId: null });
-
-      // Reset axios instance headers
-      delete axiosInstance.defaults.headers.common["Authorization"];
-
-      // Clear any other stored data
+      // Clear all AsyncStorage data
       await AsyncStorage.clear();
 
-      // Reset all other contexts
-      const leaveContext = useLeaves();
-      const notificationContext = useNotification();
-      const profileContext = useProfile();
-      const payslipContext = usePayslip();
+      // Reset auth state
+      setProfileInfo(null);
+      setTokens({ accessToken: null, refreshToken: null, employeeId: null });
+      setIsProfileLoaded(false);
+      setIsLoading(false);
+      setInitialLoading(false);
 
-      leaveContext?.resetLeaveContext();
-      notificationContext?.resetNotificationContext();
-      profileContext?.resetProfileContext();
-      payslipContext?.resetPayslipContext();
+      // Remove auth header
+      delete axiosInstance.defaults.headers.common["Authorization"];
     } catch (error) {
+      console.error("Logout error:", error);
       throw error;
     }
   };
@@ -234,6 +239,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         profileInfo,
         isLoading,
         initialLoading,
+        isProfileLoaded,
         isAuthenticated: Boolean(profileInfo?.employeeID),
         login,
         logout,
@@ -244,43 +250,4 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useLogout = () => {
-  const { tokens, setTokens, setProfileInfo } = useAuth();
-  const leaveContext = useLeaves();
-  const notificationContext = useNotification();
-  const profileContext = useProfile();
-  const payslipContext = usePayslip();
-
-  const logout = async () => {
-    try {
-      // Clear all AsyncStorage items
-      await AsyncStorage.multiRemove([
-        "accessToken",
-        "refreshToken",
-        "employeeId",
-      ]);
-
-      // Reset all context states
-      setProfileInfo(null);
-      setTokens({ accessToken: null, refreshToken: null, employeeId: null });
-
-      // Reset axios instance headers
-      delete axiosInstance.defaults.headers.common["Authorization"];
-
-      // Clear any other stored data
-      await AsyncStorage.clear();
-
-      // Reset all other contexts
-      leaveContext?.resetLeaveContext();
-      notificationContext?.resetNotificationContext();
-      profileContext?.resetProfileContext();
-      payslipContext?.resetPayslipContext();
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  return logout;
 };

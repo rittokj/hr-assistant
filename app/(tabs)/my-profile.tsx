@@ -19,7 +19,7 @@ import BottomSheet, { BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import AngleRightIcon from "@/assets/svgs/AngleRight";
-import { useAuth, useLogout } from "../contexts/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 import { useProfile } from "../contexts/ProfileContext";
 import DefaultUserImageIcon from "@/assets/svgs/DefaultUserImage";
 import { API_URL } from "@/constants/constants";
@@ -55,8 +55,7 @@ export default function ProfileScreen() {
   const scrollViewRef = useRef<ScrollView>(null);
   const itemHeights = useRef<Record<number, number>>({});
   const snapPoints = useMemo(() => ["65%"], []);
-  const { profileInfo } = useAuth();
-  const logout = useLogout();
+  const { profileInfo, logout } = useAuth();
   const { memos, warnings, fetchMemos, fetchWarnings } = useProfile();
   const animationValues = useRef<Record<string, Animated.Value>>({}).current;
   const logoutSheetRef = useRef<BottomSheet>(null);
@@ -228,8 +227,8 @@ export default function ProfileScreen() {
       label: "Salary Info",
       size: 105,
       list:
-        profileInfo?.employeeSalaryDTOList?.map((i) => ({
-          id: i?.employeeSalaryId,
+        profileInfo?.employeeSalaryDTOList?.map((i, index) => ({
+          id: `salary-${index}-${i.version}`,
           label: "Salary",
           value: `Total: ${i.totalSalary}\nDate From: ${i.dateFromText}\nVersion: ${i.version}`,
         })) || [],
@@ -239,8 +238,8 @@ export default function ProfileScreen() {
       size: 85,
       label: "Warning",
       list: warnings?.length
-        ? warnings.map((warning) => ({
-            id: warning?.subject,
+        ? warnings.map((warning, index) => ({
+            id: `warning-${index}-${warning.subject}`,
             label: warning.subject,
             message: warning.warningMessage,
             openable: true,
