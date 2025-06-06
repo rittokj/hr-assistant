@@ -23,18 +23,36 @@ const LoginScreen = () => {
 
   const handleLogin = async () => {
     try {
-      login(username, password)
-        .then(() => {
-          router.replace("/(tabs)");
-        })
-        .catch(() => {
-          Toast.show({
-            type: "error",
-            text1: `Login failed!`,
-            position: "bottom",
-            visibilityTime: 3000,
-          });
+      if (!username) {
+        Toast.show({
+          type: "warn",
+          text1: `Username is required.`,
+          position: "bottom",
+          visibilityTime: 3000,
         });
+        return;
+      } else if (!password) {
+        Toast.show({
+          type: "warn",
+          text1: `Password is required.`,
+          position: "bottom",
+          visibilityTime: 3000,
+        });
+        return;
+      } else {
+        login(username, password)
+          .then(() => {
+            router.replace("/(tabs)");
+          })
+          .catch(() => {
+            Toast.show({
+              type: "error",
+              text1: `Login failed!`,
+              position: "bottom",
+              visibilityTime: 3000,
+            });
+          });
+      }
     } catch (err) {
       if (err instanceof AxiosError) {
         Toast.show({
