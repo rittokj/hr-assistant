@@ -49,10 +49,13 @@ export const NotificationProvider = ({
   };
 
   const getNotifications = async (page: number = 1) => {
+    if (page === 1) {
+      setNotifications([]);
+    }
     try {
       setIsNotificationsLoading(true);
       const response = await axiosInstance.get(
-        `${API_URL}api/NotificationLog/GetUnReadNotificationByUserMobile?type=5400002&page=${page}&pageSize=10`
+        `${API_URL}api/NotificationLog/GetUnReadNotificationByUserMobile?type=5400001&page=${page}&pageSize=10`
       );
 
       const newNotifications = response?.data?.result || [];
@@ -77,15 +80,8 @@ export const NotificationProvider = ({
     try {
       const url = `${API_URL}api/NotificationLog/UpdateNotificationReadStatus?NotificationLogId=${id}`;
       await axiosInstance.post(url, { notificationId: id });
-      const newNotifications = [...notifications];
-      const index = notifications.findIndex(
-        (notification) => notification?.notificationLogId == id
-      );
-      if (index > -1) {
-        newNotifications.splice(index, 1);
-      }
-      setNotifications(newNotifications);
     } catch (error) {
+      console.error("Error:", JSON.stringify(error));
       throw error;
     } finally {
     }
