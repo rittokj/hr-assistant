@@ -12,8 +12,8 @@ import { primaryColor } from "@/constants/Colors";
 const LoginScreen = () => {
   const router = useRouter();
   const { login, isLoading, isAuthenticated } = useAuth();
-  const [username, setUsername] = useState("hruser");
-  const [password, setPassword] = useState("hr123");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
   useEffect(() => {
     if (isAuthenticated) {
