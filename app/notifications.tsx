@@ -32,6 +32,7 @@ const NotificationsScreen = () => {
   const {
     isNotificationsLoading,
     getNotifications,
+    readNotificationsById,
     notifications,
     hasMore,
     currentPage,
@@ -55,6 +56,7 @@ const NotificationsScreen = () => {
   }, [isNotificationsLoading, hasMore, currentPage]);
 
   const onPressNotification = (item: Notification) => {
+    readNotificationsById(item.notificationLogId);
     switch (item.sourceTypeCd) {
       case PUSH_NOTIFICATION_TYPES.HR_Memo_Source_Type:
         router.push({
