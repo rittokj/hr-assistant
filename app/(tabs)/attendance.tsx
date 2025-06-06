@@ -45,19 +45,19 @@ export default function AttendanceScreen() {
           {
             id: "1",
             title: "Total Attendance",
-            value: summary.totalAttendance.toString(),
+            value: summary?.totalAttendance.toString(),
             unit: "Days",
           },
           {
             id: "2",
             title: "Total Leaves",
-            value: summary.totalLeaves.toString(),
+            value: summary?.totalLeaves.toString(),
             unit: "Days",
           },
           {
             id: "3",
             title: "Total Working Hours",
-            value: summary.totalWorkingHours.toString(),
+            value: summary?.totalWorkingHours.toString(),
             unit: "",
           },
         ].map((item) => (
