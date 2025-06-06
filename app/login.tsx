@@ -116,9 +116,11 @@ const styles = StyleSheet.create({
     maxWidth: "70%",
     fontWeight: "bold",
     marginBottom: 10,
+    color: "#444",
   },
   subTitle: {
     fontSize: 16,
+    color: "#444",
   },
   input: {
     width: "100%",

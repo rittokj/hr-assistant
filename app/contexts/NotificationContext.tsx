@@ -13,6 +13,7 @@ type NotificationContextType = {
   isNotificationsLoading: boolean;
   notifications: Notification[];
   getNotifications: (page?: number) => Promise<void>;
+  readNotificationsById: (id?: number) => Promise<void>;
   hasMore: boolean;
   currentPage: number;
   resetNotificationContext: () => void;
@@ -72,12 +73,31 @@ export const NotificationProvider = ({
     }
   };
 
+  const readNotificationsById = async (id: number) => {
+    try {
+      const url = `${API_URL}api/NotificationLog/UpdateNotificationReadStatus?NotificationLogId=${id}`;
+      await axiosInstance.post(url, { notificationId: id });
+      const newNotifications = [...notifications];
+      const index = notifications.findIndex(
+        (notification) => notification?.notificationLogId == id
+      );
+      if (index > -1) {
+        newNotifications.splice(index, 1);
+      }
+      setNotifications(newNotifications);
+    } catch (error) {
+      throw error;
+    } finally {
+    }
+  };
+
   return (
     <NotificationContext.Provider
       value={{
         notifications,
         isNotificationsLoading,
         getNotifications,
+        readNotificationsById,
         hasMore,
         currentPage,
         resetNotificationContext,
