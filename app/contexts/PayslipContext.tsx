@@ -61,7 +61,7 @@ export function PayslipProvider({ children }: { children: React.ReactNode }) {
 
   const fetchPayslips = async () => {
     if (!profileInfo || !("employeeID" in profileInfo)) return;
-
+    setPayslips([]);
     setIsLoading(true);
     setError(null);
 
