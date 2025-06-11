@@ -90,7 +90,7 @@ function DailyAttendence({ attendance }: any) {
             <View>
               <ThemedText style={styles.smallText}>Check in</ThemedText>
               <ThemedText style={styles.text}>
-                {attendance?.startTime
+                {attendance?.startTime !== "00:00:00"
                   ? moment(attendance?.startTime, "HH:mm:ss").format("h:mm A")
                   : "-"}
               </ThemedText>
@@ -110,7 +110,7 @@ function DailyAttendence({ attendance }: any) {
             <View>
               <ThemedText style={styles.smallText}>Check out</ThemedText>
               <ThemedText style={styles.text}>
-                {attendance?.endTime
+                {attendance?.endTime !== "00:00:00"
                   ? moment(attendance?.endTime, "HH:mm:ss").format("h:mm A")
                   : "-"}
               </ThemedText>
