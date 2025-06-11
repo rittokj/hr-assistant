@@ -117,6 +117,7 @@ export const LeaveProvider = ({ children }: { children: React.ReactNode }) => {
   const getLeaveRequests = async (params: PaginationParams) => {
     try {
       setIsLoading(true);
+      setLeaveRequests([]);
       const response = await axiosInstance.post(
         `${API_URL}api/LeaveRequest/List/Pagination`,
         params
