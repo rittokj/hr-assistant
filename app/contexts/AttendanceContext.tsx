@@ -147,7 +147,6 @@ export function AttendanceProvider({
   const fetchAttendanceData = async () => {
     if (!selectedMonth.id || !profileInfo?.employeeID) return;
     setAttendanceList([]);
-
     setIsLoading(true);
     try {
       const response = await axiosInstance.post(

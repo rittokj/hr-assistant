@@ -20,9 +20,8 @@ import { useLocalSearchParams } from "expo-router";
 export default function PaySlipScreen() {
   const { payslipId } = useLocalSearchParams();
   const colorScheme = useColorScheme();
-  const { payslips, fetchPayslips } = usePayslip();
+  const { payslips, fetchPayslips, isLoading } = usePayslip();
   const [open, setOpen] = useState("");
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = async () => {
@@ -32,10 +31,8 @@ export default function PaySlipScreen() {
   };
 
   const loadData = async () => {
-    setLoading(true);
     await fetchPayslips();
     if (payslipId) setOpen(payslipId);
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -80,14 +77,15 @@ export default function PaySlipScreen() {
               setOpen={setOpen}
             />
           )}
-          ListEmptyComponent={() =>
-            !loading ? (
+          ListEmptyComponent={
+            isLoading ? (
+              <PaySlipLoader />
+            ) : (
               <ThemedText style={{ textAlign: "center", marginTop: 20 }}>
                 No pay slips found
               </ThemedText>
-            ) : null
+            )
           }
-          ListFooterComponent={() => (loading ? <PaySlipLoader /> : null)}
         />
       </ThemedView>
       <PaySlipDetails
