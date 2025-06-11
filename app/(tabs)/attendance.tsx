@@ -140,7 +140,7 @@ export default function AttendanceScreen() {
         </View>
         {listHeader()}
         <FlatList
-          data={attendanceList}
+          data={attendanceList?.reverse()}
           contentContainerStyle={{
             backgroundColor: colorScheme === "dark" ? "#171717" : "#FFF",
             paddingBottom: 250,
